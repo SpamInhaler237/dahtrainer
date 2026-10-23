@@ -33,10 +33,21 @@ if type(getgenv) == "function" then
     local ok, result = pcall(getgenv)
     if ok and type(result) == "table" then Env = result end
 end
+Env.RacerExecutorName = "Unknown"
+if type(identifyexecutor) == "function" then
+    local ok, name = pcall(identifyexecutor)
+    if ok and type(name) == "string" then Env.RacerExecutorName = name end
+end
+if Env.RacerExecutorName == "Unknown" and type(getexecutorname) == "function" then
+    local ok, name = pcall(getexecutorname)
+    if ok and type(name) == "string" then Env.RacerExecutorName = name end
+end
+Env.RacerIsXeno = string.find(string.lower(Env.RacerExecutorName),
+    "xeno", 1, true) ~= nil
 
 -- This place moves players between servers. Restore protection in the next
 -- client as soon as Real makes the local file available after a teleport.
-if type(queue_on_teleport) == "function" then
+if not Env.RacerIsXeno and type(queue_on_teleport) == "function" then
     pcall(function()
         queue_on_teleport([=[
             task.wait(2)
@@ -188,6 +199,24 @@ local S: any = {
 }
 local Connections = {}
 local ExtraUI: any = {}
+ExtraUI.ExecutorName = Env.RacerExecutorName
+ExtraUI.Capabilities = {
+    fileRead = type(readfile) == "function" and type(isfile) == "function",
+    fileWrite = type(writefile) == "function",
+    clickDetector = type(fireclickdetector) == "function",
+    mouseClick = type(mouse1click) == "function"
+        or (type(mouse1press) == "function" and type(mouse1release) == "function"),
+    connections = type(getconnections) == "function"
+        and type(debug) == "table" and type(debug.getupvalues) == "function",
+}
+ExtraUI.Capabilities.drawing = false
+if type(Drawing) == "table" and type(Drawing.new) == "function" then
+    local ok, probe = pcall(Drawing.new, "Line")
+    if ok and probe then
+        ExtraUI.Capabilities.drawing = true
+        pcall(function() probe:Remove() end)
+    end
+end
 local DeathPosition = nil
 local PlayerConnections = {} -- ONLY selected players get character listeners
 local RowConnections = {}
@@ -321,6 +350,7 @@ make("Frame", {Parent = Main, Position = UDim2.fromOffset(366, 24),
     Size = UDim2.fromOffset(6, 6), BackgroundColor3 = Color3.fromRGB(74, 180, 129),
     BorderSizePixel = 0})
 local LiveLabel = label(Main, "LIVE", 19, 20, C_FAINT, 10)
+if Env.RacerIsXeno then LiveLabel.Text = "XENO" end
 LiveLabel.Position = UDim2.fromOffset(379, 18)
 LiveLabel.Size = UDim2.fromOffset(42, 20)
 LiveLabel.Font = Enum.Font.GothamBold
@@ -761,7 +791,8 @@ ExtraUI.ConfigStatus.TextWrapped = true
 ExtraUI.MacroBtn = button(ExtraUI.ConfigPage, "MACRO PERSIST: OFF", 12, 313, 342, 39)
 label(ExtraUI.ConfigPage, "Keep the game's macro active through normal actions.",
     365, 27, C_FAINT, 10)
-label(ExtraUI.ConfigPage, "Profiles load only when you press LOAD.",
+label(ExtraUI.ConfigPage, "EXECUTOR: " .. string.upper(ExtraUI.ExecutorName)
+    .. "  /  LOAD PROFILES MANUALLY",
     402, 24, C_FAINT, 10)
 
 label(SettingsPage, "MOVEMENT & PERSONALISATION", 12, 20, C_ACCENT, 12)
@@ -1391,6 +1422,77 @@ do
     end))
 end
 do
+    if not ExtraUI.Capabilities.drawing then
+        ExtraUI.FallbackEspGui = make("ScreenGui", {
+            Name = "RACER_ESP", Parent = PlayerGui, ResetOnSpawn = false,
+            IgnoreGuiInset = true, DisplayOrder = 2199,
+        })
+    end
+    ExtraUI.newOverlayDrawable = function(kind)
+        if ExtraUI.Capabilities.drawing then return Drawing.new(kind) end
+        local state = {}
+        local object = kind == "Text" and make("TextLabel", {
+            Parent = ExtraUI.FallbackEspGui, BackgroundTransparency = 1,
+            BorderSizePixel = 0, Text = "", TextColor3 = Color3.new(1, 1, 1),
+            Font = Enum.Font.GothamBold, TextSize = 12,
+            TextXAlignment = Enum.TextXAlignment.Center, Visible = false,
+            ZIndex = 2,
+        }) or make("Frame", {
+            Parent = ExtraUI.FallbackEspGui, BorderSizePixel = 0,
+            BackgroundColor3 = Color3.new(1, 1, 1), Visible = false,
+            ZIndex = 2,
+        })
+        local stroke = kind == "Square" and make("UIStroke", {
+            Parent = object, Thickness = 1, Color = Color3.new(1, 1, 1),
+        }) or nil
+        local function refresh()
+            if not object.Parent then return end
+            object.Visible = state.Visible == true
+            if kind == "Text" then
+                local pos = state.Position or Vector2.zero
+                object.AnchorPoint = state.Center and Vector2.new(0.5, 0)
+                    or Vector2.zero
+                object.Position = UDim2.fromOffset(pos.X, pos.Y)
+                object.Size = UDim2.fromOffset(260, (state.Size or 12) + 6)
+                object.Text = state.Text or ""
+                object.TextSize = state.Size or 12
+                object.TextColor3 = state.Color or Color3.new(1, 1, 1)
+            elseif kind == "Line" then
+                local from = state.From or Vector2.zero
+                local to = state.To or from
+                local delta = to - from
+                object.AnchorPoint = Vector2.new(0.5, 0.5)
+                object.Position = UDim2.fromOffset((from.X + to.X) * 0.5,
+                    (from.Y + to.Y) * 0.5)
+                object.Size = UDim2.fromOffset(delta.Magnitude,
+                    state.Thickness or 1)
+                object.Rotation = math.deg(math.atan2(delta.Y, delta.X))
+                object.BackgroundColor3 = state.Color or Color3.new(1, 1, 1)
+            else
+                local pos = state.Position or Vector2.zero
+                local size = state.Size or Vector2.zero
+                object.Position = UDim2.fromOffset(pos.X, pos.Y)
+                object.Size = UDim2.fromOffset(size.X, size.Y)
+                object.BackgroundColor3 = state.Color or Color3.new(1, 1, 1)
+                object.BackgroundTransparency = state.Filled and 0 or 1
+                stroke.Enabled = not state.Filled
+                stroke.Color = state.Color or Color3.new(1, 1, 1)
+                stroke.Thickness = state.Thickness or 1
+            end
+        end
+        return setmetatable({}, {
+            __index = function(_, key)
+                if key == "Remove" then
+                    return function() if object.Parent then object:Destroy() end end
+                end
+                return state[key]
+            end,
+            __newindex = function(_, key, value)
+                state[key] = value
+                refresh()
+            end,
+        })
+    end
     local overlays = {}
     local ranges = {250, 500, 1000, math.huge}
     local colors = {Color3.fromRGB(75, 213, 224), Color3.fromRGB(186, 144, 253),
@@ -1422,10 +1524,13 @@ do
         for _, line in ipairs(o.lines) do line.Visible = false end
     end
     local function createOverlay()
-        local o = {box = Drawing.new("Square"), name = Drawing.new("Text"),
-            distance = Drawing.new("Text"), combat = Drawing.new("Text"),
-            healthBack = Drawing.new("Square"),
-            healthFill = Drawing.new("Square"), tracer = Drawing.new("Line"), lines = {}}
+        local o = {box = ExtraUI.newOverlayDrawable("Square"),
+            name = ExtraUI.newOverlayDrawable("Text"),
+            distance = ExtraUI.newOverlayDrawable("Text"),
+            combat = ExtraUI.newOverlayDrawable("Text"),
+            healthBack = ExtraUI.newOverlayDrawable("Square"),
+            healthFill = ExtraUI.newOverlayDrawable("Square"),
+            tracer = ExtraUI.newOverlayDrawable("Line"), lines = {}}
         o.box.Filled = false
         o.box.Thickness = 1.5
         o.healthBack.Filled, o.healthFill.Filled = true, true
@@ -1435,7 +1540,7 @@ do
         o.name.Outline, o.distance.Outline, o.combat.Outline = true, true, true
         o.name.Size, o.distance.Size, o.combat.Size = 13, 12, 11
         for i = 1, #r15 do
-            local line = Drawing.new("Line")
+            local line = ExtraUI.newOverlayDrawable("Line")
             line.Thickness = 1.4
             o.lines[i] = line
         end
@@ -1546,6 +1651,10 @@ do
     bind(RunService.RenderStepped:Connect(renderEsp))
     ExtraUI.cleanupEsp = function()
         for player, o in pairs(overlays) do clearOverlay(o); overlays[player] = nil end
+        if ExtraUI.FallbackEspGui then
+            ExtraUI.FallbackEspGui:Destroy()
+            ExtraUI.FallbackEspGui = nil
+        end
     end
     bind(ExtraUI.EspMain.MouseButton1Click:Connect(function()
         S.esp.enabled = not S.esp.enabled
@@ -1613,6 +1722,27 @@ local function closestArmorShop(root, excluded)
     return best
 end
 
+ExtraUI.clickShop = function(click, head)
+    if ExtraUI.Capabilities.clickDetector then
+        return pcall(fireclickdetector, click, 0, "mouseclick")
+    end
+    -- Some Xeno builds omit fireclickdetector. Try an ordinary on-screen click.
+    local camera = Workspace.CurrentCamera
+    if not camera or not head then return false end
+    local oldCamera = camera.CFrame
+    local ok = pcall(function()
+        camera.CFrame = CFrame.lookAt(camera.CFrame.Position, head.Position)
+        task.wait()
+        local point, visible = camera:WorldToViewportPoint(head.Position)
+        if not visible then error("shop is not on screen") end
+        local input = game:GetService("VirtualInputManager")
+        input:SendMouseButtonEvent(point.X, point.Y, 0, true, game, 0)
+        input:SendMouseButtonEvent(point.X, point.Y, 0, false, game, 0)
+    end)
+    camera.CFrame = oldCamera
+    return ok
+end
+
 local function buyArmorAfterSpawn(character)
     local generation = S.armorGeneration
     local root = character:WaitForChild("HumanoidRootPart", 6)
@@ -1627,10 +1757,6 @@ local function buyArmorAfterSpawn(character)
     if S.closed or not S.autoArmor or generation ~= S.armorGeneration
         or Me.Character ~= character or not root.Parent or hum.Health <= 0 then return end
     if armor.Value >= 200 then say("Auto armor: already full."); return end
-    if type(fireclickdetector) ~= "function" then
-        say("Auto armor: this executor has no ClickDetector interaction.")
-        return
-    end
     local shop = closestArmorShop(root)
     if not shop then say("Auto armor: no loaded armor shop found."); return end
     local before = armor.Value
@@ -1646,7 +1772,7 @@ local function buyArmorAfterSpawn(character)
             task.wait(attempt == 1 and 0.24 or 0.18)
             if Me.Character ~= character or not root.Parent
                 or generation ~= S.armorGeneration or armor.Value > before then break end
-            local ok = pcall(fireclickdetector, shop.click, 0, "mouseclick")
+            local ok = ExtraUI.clickShop(shop.click, shop.head)
             clicked = clicked or ok
             local untilAt = os.clock() + 0.35
             while os.clock() < untilAt and armor.Value <= before
@@ -1711,7 +1837,6 @@ local function closestShopByName(name, root)
 end
 local function buyShopItem(character, name)
     if hasShopItem(character, name) then return true end
-    if type(fireclickdetector) ~= "function" then return false end
     local root = character:FindFirstChild("HumanoidRootPart")
     if not root or Me.Character ~= character then return false end
     local shops = closestShopByName(name, root)
@@ -1727,7 +1852,7 @@ local function buyShopItem(character, name)
             task.wait(0.15)
             if S.closed or Me.Character ~= character or not root.Parent
                 or hasShopItem(character, name) then break end
-            pcall(fireclickdetector, shop.click, 0, "mouseclick")
+            ExtraUI.clickShop(shop.click, shop.head)
             local untilAt = os.clock() + 0.35
             while os.clock() < untilAt and not hasShopItem(character, name)
                 and Me.Character == character and not S.closed do task.wait(0.04) end
@@ -2976,6 +3101,12 @@ local function clickMouse()
         end)
         return true
     end
+    -- Xeno builds without mouse simulation can still activate an equipped gun.
+    local character = Me.Character
+    local equipped = character and character:FindFirstChildOfClass("Tool")
+    if equipped and equipped:FindFirstChild("Response") then
+        return pcall(function() equipped:Activate() end)
+    end
     return false
 end
 ExtraUI.Mouse = Me:GetMouse()
@@ -3158,14 +3289,12 @@ bind(ExtraUI.QuietKillBtn.MouseButton1Click:Connect(function()
         or "Auto kill strafing enabled.")
 end))
 bind(Trigger.MouseButton1Click:Connect(function()
-    if not S.trigger and type(mouse1click) ~= "function"
-        and not (type(mouse1press) == "function" and type(mouse1release) == "function") then
-        say("Trigger needs an executor mouse-click function.")
-        return
-    end
     S.trigger = not S.trigger
     style(Trigger, S.trigger, "TRIGGER: ON", "TRIGGER: OFF")
     updateLoops()
+    if S.trigger and not ExtraUI.Capabilities.mouseClick then
+        say("Trigger uses equipped gun activation on this executor.")
+    end
 end))
 bind(CameraBtn.MouseButton1Click:Connect(function()
     S.cameraAim = not S.cameraAim
@@ -4287,6 +4416,29 @@ local function attachJumpBypass(character)
     local generation = S.jumpBypassGeneration
     disconnectJumpBypass()
     if not S.jumpBypass then return end
+    if not ExtraUI.Capabilities.connections then
+        task.spawn(function()
+            local hum = character and character:WaitForChild("Humanoid", 5)
+            if not hum or generation ~= S.jumpBypassGeneration then return end
+            local normalJump = math.max(hum.JumpPower, 50)
+            ExtraUI.jumpBypassConnection = RunService.RenderStepped:Connect(function()
+                if S.closed or not S.jumpBypass
+                    or generation ~= S.jumpBypassGeneration
+                    or Me.Character ~= character then return end
+                if hum.JumpPower < normalJump then hum.JumpPower = normalJump end
+            end)
+            ExtraUI.jumpBypassInputConnection = UIS.JumpRequest:Connect(function()
+                if S.closed or not S.jumpBypass
+                    or generation ~= S.jumpBypassGeneration
+                    or Me.Character ~= character or UIS:GetFocusedTextBox() then return end
+                if hum.Health <= 0 or hum.Sit
+                    or hum.FloorMaterial == Enum.Material.Air then return end
+                hum.JumpPower = normalJump
+                hum.Jump = true
+            end)
+        end)
+        return
+    end
     task.spawn(function()
         local hum = character and character:WaitForChild("Humanoid", 5)
         if not hum then return end
@@ -5221,10 +5373,6 @@ for index, slot in ipairs(ExtraUI.ConfigSlots) do
 end
 ExtraUI.syncConfigSlot()
 bind(ExtraUI.ConfigSave.MouseButton1Click:Connect(function()
-    if type(writefile) ~= "function" then
-        ExtraUI.ConfigStatus.Text = "This executor does not support saving files."
-        return
-    end
     local profile = {version = 1, settings = {}, rapidWeapons = {},
         autoBuys = {}, esp = {}, notify = {}}
     for _, key in ipairs(ExtraUI.configKeys) do
@@ -5238,26 +5386,38 @@ bind(ExtraUI.ConfigSave.MouseButton1Click:Connect(function()
     end
     for key, value in pairs(S.esp) do profile.esp[key] = value end
     for key, value in pairs(S.notify) do profile.notify[key] = value end
-    local ok, err = pcall(function()
-        writefile(ExtraUI.configPath(),
-            game:GetService("HttpService"):JSONEncode(profile))
-    end)
-    ExtraUI.ConfigStatus.Text = ok and
-        ("Saved slot " .. ExtraUI.configSlot .. ".") or
-        ("Save failed: " .. tostring(err))
+    if ExtraUI.Capabilities.fileWrite then
+        local ok = pcall(function()
+            writefile(ExtraUI.configPath(),
+                game:GetService("HttpService"):JSONEncode(profile))
+        end)
+        if ok then
+            ExtraUI.ConfigStatus.Text = "Saved slot " .. ExtraUI.configSlot .. "."
+            return
+        end
+    end
+    Env.RacerMemoryConfigs = Env.RacerMemoryConfigs or {}
+    Env.RacerMemoryConfigs[ExtraUI.configSlot] = profile
+    ExtraUI.ConfigStatus.Text = "Saved slot " .. ExtraUI.configSlot
+        .. " for this session."
 end))
 bind(ExtraUI.ConfigLoad.MouseButton1Click:Connect(function()
-    if type(readfile) ~= "function" or type(isfile) ~= "function" then
-        ExtraUI.ConfigStatus.Text = "This executor does not support loading files."
-        return
+    local ok, profile = false, nil
+    if ExtraUI.Capabilities.fileRead then
+        ok, profile = pcall(function()
+            if not isfile(ExtraUI.configPath()) then return nil end
+            return game:GetService("HttpService"):JSONDecode(readfile(ExtraUI.configPath()))
+        end)
     end
-    if not isfile(ExtraUI.configPath()) then
+    if not ok or profile == nil then
+        profile = Env.RacerMemoryConfigs
+            and Env.RacerMemoryConfigs[ExtraUI.configSlot] or nil
+        ok = profile ~= nil
+    end
+    if not ok or profile == nil then
         ExtraUI.ConfigStatus.Text = "Slot " .. ExtraUI.configSlot .. " is empty."
         return
     end
-    local ok, profile = pcall(function()
-        return game:GetService("HttpService"):JSONDecode(readfile(ExtraUI.configPath()))
-    end)
     if not ok or type(profile) ~= "table" or profile.version ~= 1
         or type(profile.settings) ~= "table" then
         ExtraUI.ConfigStatus.Text = "This slot has invalid config data."
