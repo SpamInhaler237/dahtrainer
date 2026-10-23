@@ -1,3 +1,24 @@
+-- RACER / Xeno compatibility gate / standalone Luau
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 local Players = game:GetService("\080\108\097\121\101\114\115")
 local Workspace = game:GetService("\087\111\114\107\115\112\097\099\101")
 local ReplicatedStorage = game:GetService("\082\101\112\108\105\099\097\116\101\100\083\116\111\114\097\103\101")
@@ -24,6 +45,128 @@ if Env.RacerExecutorName == "\085\110\107\110\111\119\110" and type(getexecutorn
 end
 Env.RacerIsXeno = string.find(string.lower(Env.RacerExecutorName),
     "\120\101\110\111", 1, true) ~= nil
+
+ 
+ 
+if Env.RacerIsXeno then
+    local consent = Instance.new("\083\099\114\101\101\110\071\117\105")
+    consent.Name = "\082\065\067\069\082\095\088\101\110\111\067\111\110\115\101\110\116"
+    consent.IgnoreGuiInset = true
+    consent.ResetOnSpawn = false
+    consent.DisplayOrder = 10000
+    consent.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    consent.Parent = PlayerGui
+
+    local backdrop = Instance.new("\070\114\097\109\101")
+    backdrop.Name = "\066\097\099\107\100\114\111\112"
+    backdrop.Size = UDim2.fromScale(1, 1)
+    backdrop.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
+    backdrop.BackgroundTransparency = 0.22
+    backdrop.BorderSizePixel = 0
+    backdrop.Parent = consent
+
+    local card = Instance.new("\070\114\097\109\101")
+    card.Name = "\067\111\109\112\097\116\105\098\105\108\105\116\121\080\114\111\109\112\116"
+    card.AnchorPoint = Vector2.new(0.5, 0.5)
+    card.Position = UDim2.fromScale(0.5, 0.5)
+    card.Size = UDim2.fromOffset(510, 376)
+    card.BackgroundColor3 = Color3.fromRGB(25, 27, 33)
+    card.BorderSizePixel = 0
+    card.Parent = backdrop
+    local stroke = Instance.new("\085\073\083\116\114\111\107\101")
+    stroke.Color = Color3.fromRGB(78, 142, 255)
+    stroke.Thickness = 1
+    stroke.Parent = card
+
+    local function textLabel(name, text, y, height, size, color, bold)
+        local item = Instance.new("\084\101\120\116\076\097\098\101\108")
+        item.Name = name
+        item.Position = UDim2.fromOffset(24, y)
+        item.Size = UDim2.new(1, -48, 0, height)
+        item.BackgroundTransparency = 1
+        item.Text = text
+        item.TextWrapped = true
+        item.TextXAlignment = Enum.TextXAlignment.Left
+        item.TextYAlignment = Enum.TextYAlignment.Top
+        item.TextSize = size
+        item.Font = bold and Enum.Font.GothamBold or Enum.Font.Gotham
+        item.TextColor3 = color
+        item.Parent = card
+        return item
+    end
+    local heading = textLabel("\072\101\097\100\105\110\103", "\082\065\067\069\082\032\032\047\032\032\088\069\078\079\032\068\069\084\069\067\084\069\068", 22, 33, 22,
+        Color3.fromRGB(242, 245, 255), true)
+    local notice = textLabel("\078\111\116\105\099\101",
+        "\089\111\117\039\114\101\032\114\117\110\110\105\110\103\032\088\101\110\111\046\032\083\111\109\101\032\082\065\067\069\082\032\102\101\097\116\117\114\101\115\032\100\101\112\101\110\100\032\111\110\032\101\120\101\099\117\116\111\114\032\065\080\073\115\032" ..
+        "\116\104\097\116\032\109\097\121\032\098\101\032\109\105\115\115\105\110\103\032\111\114\032\117\110\115\117\112\112\111\114\116\101\100\032\105\110\032\121\111\117\114\032\098\117\105\108\100\046",
+        73, 63, 14, Color3.fromRGB(211, 217, 232), false)
+    local details = textLabel("\068\101\116\097\105\108\115",
+        "ACCEPT  -  Review available and limited features before loading.\n\n" ..
+        "\068\069\067\076\073\078\069\032\032\045\032\032\069\120\105\116\032\119\105\116\104\111\117\116\032\108\111\097\100\105\110\103\032\082\065\067\069\082\046",
+        156, 115, 13, Color3.fromRGB(170, 188, 213), false)
+
+    local function actionButton(name, title, x, color)
+        local btn = Instance.new("\084\101\120\116\066\117\116\116\111\110")
+        btn.Name = name
+        btn.Text = title
+        btn.Size = UDim2.fromOffset(219, 44)
+        btn.Position = UDim2.fromOffset(x, 309)
+        btn.BackgroundColor3 = color
+        btn.BorderSizePixel = 0
+        btn.TextColor3 = Color3.fromRGB(250, 250, 252)
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 13
+        btn.Parent = card
+        return btn
+    end
+    local acceptButton = actionButton("\065\099\099\101\112\116", "\065\067\067\069\080\084", 24, Color3.fromRGB(38, 78, 141))
+    local declineButton = actionButton("\068\101\099\108\105\110\101", "\068\069\067\076\073\078\069", 267, Color3.fromRGB(66, 54, 62))
+    local signal = Instance.new("\066\105\110\100\097\098\108\101\069\118\101\110\116")
+    local accepted, decided, showingFeatures = false, false, false
+    local function finish(choice)
+        if decided then return end
+        decided, accepted = true, choice
+        signal:Fire()
+    end
+    local acceptConn = acceptButton.MouseButton1Click:Connect(function()
+        if showingFeatures then
+            finish(true)
+            return
+        end
+        showingFeatures = true
+        heading.Text = "\088\069\078\079\032\032\047\032\032\070\069\065\084\085\082\069\032\083\085\080\080\079\082\084"
+        notice.Position = UDim2.fromOffset(24, 67)
+        notice.Size = UDim2.new(1, -48, 0, 82)
+        notice.Text = "AVAILABLE IN THE MENU\n" ..
+            "\084\097\114\103\101\116\032\115\101\108\101\099\116\105\111\110\044\032\110\111\116\105\102\105\099\097\116\105\111\110\115\044\032\065\110\116\105\045\083\116\111\109\112\044\032\109\111\118\101\109\101\110\116\044\032" ..
+            "\071\085\073\045\098\097\115\101\100\032\069\083\080\032\102\097\108\108\098\097\099\107\044\032\083\116\097\110\100\032\097\110\100\032\108\111\099\097\108\032\119\101\097\112\111\110\032\099\111\110\116\114\111\108\115\032" ..
+            "\040\105\110\100\105\118\105\100\117\097\108\032\097\099\116\105\111\110\115\032\100\101\112\101\110\100\032\111\110\032\103\097\109\101\047\099\108\105\101\110\116\032\115\117\112\112\111\114\116\041\046"
+        details.Position = UDim2.fromOffset(24, 163)
+        details.Size = UDim2.new(1, -48, 0, 138)
+        details.Text = "UNAVAILABLE IN XENO\n" ..
+            "Auto Buy and Auto Armor are disabled.\n\n" ..
+            "LIMITED / CONDITIONAL\n" ..
+            "\083\105\108\101\110\116\032\065\105\109\044\032\070\111\114\099\101\032\072\105\116\044\032\087\097\108\108\098\097\110\103\044\032\073\110\102\105\110\105\116\101\032\082\097\110\103\101\044\032" ..
+            "\065\117\116\111\032\075\105\108\108\032\097\110\100\032\066\114\105\110\103\032\114\101\113\117\105\114\101\032\071\117\110\077\097\110\097\103\101\114\032\097\099\099\101\115\115\046\032" ..
+            "\069\083\080\032\117\115\101\115\032\068\114\097\119\105\110\103\032\105\102\032\097\118\097\105\108\097\098\108\101\044\032\111\116\104\101\114\119\105\115\101\032\071\085\073\032\102\097\108\108\098\097\099\107\046"
+        acceptButton.Text = "\076\079\065\068\032\082\065\067\069\082"
+    end)
+    local declineConn = declineButton.MouseButton1Click:Connect(function()
+        finish(false)
+    end)
+    if not decided then signal.Event:Wait() end
+    acceptConn:Disconnect()
+    declineConn:Disconnect()
+    consent:Destroy()
+    signal:Destroy()
+    if not accepted then
+        for _, name in ipairs({"\083\112\101\099\116\114\097\083\101\108\101\099\116\067\108\101\097\110\117\112", "\068\065\072\095\076\105\116\101\067\108\101\097\110\117\112",
+            "\068\065\072\095\080\111\108\105\115\104\101\100\067\108\101\097\110\117\112"}) do
+            if type(Env[name]) == "\102\117\110\099\116\105\111\110" then pcall(Env[name]) end
+        end
+        return
+    end
+end
 
  
  
@@ -189,6 +332,11 @@ ExtraUI.Capabilities = {
     connections = type(getconnections) == "\102\117\110\099\116\105\111\110"
         and type(debug) == "\116\097\098\108\101" and type(debug.getupvalues) == "\102\117\110\099\116\105\111\110",
 }
+ 
+ 
+ 
+ExtraUI.Capabilities.shopPurchase = not Env.RacerIsXeno
+Env.RacerFeatureSupport = ExtraUI.Capabilities
 ExtraUI.Capabilities.drawing = false
 if type(Drawing) == "\116\097\098\108\101" and type(Drawing.new) == "\102\117\110\099\116\105\111\110" then
     local ok, probe = pcall(Drawing.new, "\076\105\110\101")
@@ -395,7 +543,7 @@ local AimTab = button(Sidebar, "\032\032\067\079\077\066\065\084", 8, 96, 95, 38
 local ToolsTab = button(Sidebar, "\032\032\071\065\077\069\080\076\065\089", 8, 144, 95, 38)
 ExtraUI.EspTab = button(Sidebar, "\032\032\086\073\083\085\065\076\083", 8, 192, 95, 38)
 local SettingsTab = button(Sidebar, "\032\032\079\080\084\073\079\078\083", 8, 240, 95, 38)
-ExtraUI.SidebarHint = label(Sidebar, "\083\067\082\079\076\076\032\080\065\078\069\076\083\n\070\079\082\032\077\079\082\069", 291, 52, C_FAINT, 10)
+ExtraUI.SidebarHint = label(Sidebar, "SCROLL PANELS\nFOR MORE", 291, 52, C_FAINT, 10)
 ExtraUI.SidebarHint.TextWrapped = true
 ExtraUI.SidebarHint.TextYAlignment = Enum.TextYAlignment.Top
 for _, tab in ipairs({TargetTab, AimTab, ToolsTab, ExtraUI.EspTab, SettingsTab}) do
@@ -487,6 +635,17 @@ local AutoBuyNext = button(ToolsPage, "\062", 316, 302, 38, 30)
 local AutoBuyToggle = button(ToolsPage, "\065\085\084\079\032\066\085\089\058\032\079\070\070", 12, 340, 342, 30)
 local AutoBuyNow = button(ToolsPage, "\066\085\089\032\083\069\076\069\067\084\069\068\032\078\079\087", 12, 378, 342, 30)
 local AutoBuyCount = label(ToolsPage, "\048\032\105\116\101\109\115\032\115\101\108\101\099\116\101\100\046\032\083\104\111\112\115\032\117\115\101\032\067\108\105\099\107\068\101\116\101\099\116\111\114\115\046", 414, 36, C_FAINT, 10)
+if not ExtraUI.Capabilities.shopPurchase then
+    AutoArmor.Text = "\065\085\084\079\032\065\082\077\079\082\058\032\085\078\065\086\065\073\076\065\066\076\069\032\073\078\032\088\069\078\079"
+    AutoArmor.AutoButtonColor = false
+    AutoArmor.BackgroundColor3 = C_OFF
+    AutoBuyPrev.Visible = false
+    AutoBuyName.Visible = false
+    AutoBuyNext.Visible = false
+    AutoBuyToggle.Visible = false
+    AutoBuyNow.Visible = false
+    AutoBuyCount.Text = "\083\072\079\080\032\065\085\084\079\077\065\084\073\079\078\032\085\078\065\086\065\073\076\065\066\076\069\032\073\078\032\088\069\078\079"
+end
 
 label(ExtraUI.GunsPage, "\082\065\080\073\068\032\070\073\082\069\032\032\047\032\032\080\069\082\032\087\069\065\080\079\078", 16, 22, C_ACCENT, 12)
 label(ExtraUI.GunsPage, "\072\111\108\100\032\102\105\114\101\046\032\083\104\111\116\103\117\110\032\100\097\109\097\103\101\032\099\097\100\101\110\099\101\032\105\115\032\115\101\114\118\101\114\032\099\111\110\116\114\111\108\108\101\100\046",
@@ -1368,6 +1527,7 @@ do
     local spreadBtn = button(ExtraUI.GunList, "\068\066\032\078\079\032\083\080\082\069\065\068\058\032\079\070\070", 5, 0, 326, 35)
     spreadBtn.LayoutOrder = -2
     bind(spreadBtn.MouseButton1Click:Connect(function()
+        if ExtraUI.Capabilities.gunManager == false then return end
         S.noSpread = not S.noSpread
         applySpread()
         style(spreadBtn, S.noSpread, "\068\066\032\078\079\032\083\080\082\069\065\068\058\032\079\078", "\068\066\032\078\079\032\083\080\082\069\065\068\058\032\079\070\070")
@@ -1703,6 +1863,7 @@ local function closestArmorShop(root, excluded)
 end
 
 ExtraUI.clickShop = function(click, head)
+    if not ExtraUI.Capabilities.shopPurchase then return false end
     if ExtraUI.Capabilities.clickDetector then
         return pcall(fireclickdetector, click, 0, "\109\111\117\115\101\099\108\105\099\107")
     end
@@ -1724,6 +1885,7 @@ ExtraUI.clickShop = function(click, head)
 end
 
 local function buyArmorAfterSpawn(character)
+    if not ExtraUI.Capabilities.shopPurchase then return end
     local generation = S.armorGeneration
     local root = character:WaitForChild("\072\117\109\097\110\111\105\100\082\111\111\116\080\097\114\116", 6)
     local hum = character:WaitForChild("\072\117\109\097\110\111\105\100", 6)
@@ -1779,6 +1941,7 @@ local function selectedShop()
     return ShopNames[S.autoBuyIndex]
 end
 local function refreshAutoBuyControls()
+    if not ExtraUI.Capabilities.shopPurchase then return end
     local name = selectedShop()
     AutoBuyName.Text = name:gsub("\037\091", ""):gsub("\037\093", "")
     style(AutoBuyToggle, S.autoBuys[name] == true, "\065\085\084\079\032\066\085\089\058\032\079\078", "\065\085\084\079\032\066\085\089\058\032\079\070\070")
@@ -1846,6 +2009,7 @@ local function buyShopItem(character, name)
 end
 local ShopBusy = false
 local function buyAutoItems(character, onlyName)
+    if not ExtraUI.Capabilities.shopPurchase then return end
     while ShopBusy and not S.closed and Me.Character == character do task.wait(0.03) end
     if S.closed or Me.Character ~= character then return end
     ShopBusy = true
@@ -2179,8 +2343,10 @@ local function autoStompTick(expectedModel, allowSelected)
         AutoStompTrackCharacter = character
         AutoStompTrack = animator:LoadAnimation(stompAnimation)
     end
-    local proof = require(infoModule):CheckCredibility()
-    if proof ~= true then return end
+    local proofOk, proof = pcall(function()
+        return require(infoModule):CheckCredibility()
+    end)
+    if not proofOk or proof ~= true then return end
 
     if S.stompAnimationEnabled then
         AutoStompTrack:Play(0, 1, 5)
@@ -2499,15 +2665,52 @@ Hook.nextMultiShot = function()
     return nil, nil, nil
 end
 
+ExtraUI.disableGunManagerFeatures = function(reason)
+    if not Env.RacerIsXeno then return end
+    ExtraUI.Capabilities.gunManager = false
+    S.silent, S.forceHit, S.wallBang, S.infiniteRange, S.noSpread =
+        false, false, false, false, false
+    S.bulletMode = 1
+    Hook.enabled, Hook.part, Hook.record = false, nil, nil
+    for _, control in ipairs({Silent, ForceHitBtn, WallBangBtn,
+        ExtraUI.InfiniteRangeBtn, ExtraUI.BulletModeBtn,
+        AutoKillBtn, Bring, ExtraUI.GunModButtons.spread}) do
+        control.AutoButtonColor = false
+        control.BackgroundColor3 = C_OFF
+    end
+    Silent.Text = "\083\073\076\069\078\084\032\065\073\077\058\032\088\069\078\079\032\085\078\083\085\080\080\079\082\084\069\068"
+    ForceHitBtn.Text = "\070\079\082\067\069\032\072\073\084\058\032\088\069\078\079\032\085\078\083\085\080\080\079\082\084\069\068"
+    WallBangBtn.Text = "\087\065\076\076\066\065\078\071\058\032\088\069\078\079\032\085\078\083\085\080\080\079\082\084\069\068"
+    ExtraUI.InfiniteRangeBtn.Text = "\073\078\070\073\078\073\084\069\032\082\065\078\071\069\058\032\088\069\078\079\032\085\078\083\085\080\080\079\082\084\069\068"
+    ExtraUI.BulletModeBtn.Text = "\066\085\076\076\069\084\032\068\073\082\069\067\084\073\079\078\058\032\088\069\078\079\032\085\078\083\085\080\080\079\082\084\069\068"
+    AutoKillBtn.Text = "\065\085\084\079\032\075\073\076\076\058\032\088\069\078\079\032\085\078\083\085\080\080\079\082\084\069\068"
+    Bring.Text = "\066\082\073\078\071\058\032\088\069\078\079\032\085\078\083\085\080\080\079\082\084\069\068"
+    ExtraUI.GunModButtons.spread.Text = "\068\066\032\078\079\032\083\080\082\069\065\068\058\032\088\069\078\079\032\085\078\083\085\080\080\079\082\084\069\068"
+    ExtraUI.WallBangInfo.Text = "\071\085\078\032\077\065\078\065\071\069\082\032\085\078\065\086\065\073\076\065\066\076\069\058\032" .. tostring(reason)
+end
+
 local function installRaycastHook()
+    if ExtraUI.Capabilities.gunManager == false then
+        return false, "\088\101\110\111\032\099\097\110\110\111\116\032\097\099\099\101\115\115\032\116\104\105\115\032\103\097\109\101\039\115\032\071\117\110\077\097\110\097\103\101\114\046"
+    end
     if Hook.installed and Hook.manager and Hook.manager.Raycast == Hook.wrapper then return true end
     local storage = ReplicatedStorage:FindFirstChild("\083\116\111\114\097\103\101")
     local modules = storage and storage:FindFirstChild("\077\111\100\117\108\101\115")
     local dialect = modules and modules:FindFirstChild("\068\105\097\108\101\099\116")
     local module = dialect and dialect:FindFirstChild("\071\117\110\077\097\110\097\103\101\114")
-    if not module then return false, "\071\117\110\077\097\110\097\103\101\114\032\105\115\032\110\111\116\032\108\111\097\100\101\100\032\121\101\116\059\032\116\114\121\032\097\103\097\105\110\046" end
+    if not module then
+        module = ReplicatedStorage:FindFirstChild("\071\117\110\077\097\110\097\103\101\114", true)
+    end
+    if not module and dialect then
+        module = dialect:WaitForChild("\071\117\110\077\097\110\097\103\101\114", 5)
+    end
+    if not module or not module:IsA("\077\111\100\117\108\101\083\099\114\105\112\116") then
+        ExtraUI.disableGunManagerFeatures("\109\111\100\117\108\101\032\110\111\116\032\102\111\117\110\100")
+        return false, "\071\117\110\077\097\110\097\103\101\114\032\099\111\117\108\100\032\110\111\116\032\098\101\032\102\111\117\110\100\032\105\110\032\116\104\105\115\032\099\108\105\101\110\116\046"
+    end
     local ok, manager = pcall(require, module)
     if not ok or type(manager) ~= "\116\097\098\108\101" or type(manager.Raycast) ~= "\102\117\110\099\116\105\111\110" then
+        ExtraUI.disableGunManagerFeatures("\109\111\100\117\108\101\032\114\101\113\117\105\114\101\032\102\097\105\108\101\100")
         return false, "\067\111\117\108\100\032\110\111\116\032\097\099\099\101\115\115\032\116\104\105\115\032\103\097\109\101\039\115\032\103\117\110\032\114\097\121\099\097\115\116\046"
     end
     local original = manager.Raycast
@@ -2590,6 +2793,7 @@ local function installRaycastHook()
     end
     local assigned = pcall(function() manager.Raycast = redirect end)
     if not assigned or manager.Raycast ~= redirect then
+        ExtraUI.disableGunManagerFeatures("\082\097\121\099\097\115\116\032\099\097\110\110\111\116\032\098\101\032\114\101\112\108\097\099\101\100")
         return false, "\067\111\117\108\100\032\110\111\116\032\105\110\115\116\097\108\108\032\116\104\101\032\103\117\110\045\115\112\101\099\105\102\105\099\032\097\105\109\032\112\097\116\104\046"
     end
     Hook.manager, Hook.original, Hook.wrapper = manager, original, redirect
@@ -3330,6 +3534,10 @@ bind(Refresh.MouseButton1Click:Connect(function()
     say("\079\110\101\045\111\102\102\032\087\111\114\107\115\112\097\099\101\032\114\101\102\114\101\115\104\032\102\111\114\032" .. #TargetList .. "\032\115\101\108\101\099\116\101\100\032\112\108\097\121\101\114\040\115\041\046")
 end))
 bind(AutoArmor.MouseButton1Click:Connect(function()
+    if not ExtraUI.Capabilities.shopPurchase then
+        say("\088\101\110\111\058\032\097\117\116\111\109\097\116\101\100\032\115\104\111\112\032\112\117\114\099\104\097\115\101\115\032\097\114\101\032\117\110\097\118\097\105\108\097\098\108\101\032\105\110\032\116\104\105\115\032\098\117\105\108\100\046")
+        return
+    end
     S.autoArmor = not S.autoArmor
     S.armorGeneration = S.armorGeneration + 1
     style(AutoArmor, S.autoArmor, "\065\085\084\079\032\065\082\077\079\082\032\079\078\032\082\069\083\080\065\087\078\058\032\079\078", "\065\085\084\079\032\065\082\077\079\082\032\079\078\032\082\069\083\080\065\087\078\058\032\079\070\070")
@@ -3516,12 +3724,14 @@ bind(AutoBuyNext.MouseButton1Click:Connect(function()
     refreshAutoBuyControls()
 end))
 bind(AutoBuyToggle.MouseButton1Click:Connect(function()
+    if not ExtraUI.Capabilities.shopPurchase then return end
     local name = selectedShop()
     S.autoBuys[name] = not S.autoBuys[name] or nil
     refreshAutoBuyControls()
     say(name .. (S.autoBuys[name] and "\032\119\105\108\108\032\098\101\032\098\111\117\103\104\116\032\111\110\032\114\101\115\112\097\119\110\046" or "\032\097\117\116\111\032\098\117\121\032\100\105\115\097\098\108\101\100\046"))
 end))
 bind(AutoBuyNow.MouseButton1Click:Connect(function()
+    if not ExtraUI.Capabilities.shopPurchase then return end
     if not Me.Character then say("\078\111\032\099\104\097\114\097\099\116\101\114\032\097\118\097\105\108\097\098\108\101\032\102\111\114\032\115\104\111\112\112\105\110\103\046"); return end
     task.spawn(buyAutoItems, Me.Character, selectedShop())
 end))
@@ -4502,7 +4712,7 @@ end))
 ExtraUI.standResolvePlayer = function(query)
     query = (query or ""):match("\094\037\115\042\040\046\045\041\037\115\042\036")
     query = query:gsub("\094\064", ""):gsub("\094\037\040\040\046\045\041\037\041\036", "\037\049")
-        :gsub('\094\034\040\046\045\041\034\036', "\037\049")
+        :gsub("\094\034\040\046\045\041\034\036", "\037\049")
     query = string.lower(query)
     if query == "" then return nil, "\069\110\116\101\114\032\097\032\112\108\097\121\101\114\032\110\097\109\101\046" end
     local exactName, exactDisplay, matches = nil, nil, {}
@@ -5409,6 +5619,10 @@ bind(ExtraUI.ConfigLoad.MouseButton1Click:Connect(function()
     for _, key in ipairs(ExtraUI.configKeys) do
         if type(settings[key]) == type(S[key]) then S[key] = settings[key] end
     end
+    if ExtraUI.Capabilities.gunManager == false then
+        S.infiniteRange, S.noSpread = false, false
+        S.bulletMode = 1
+    end
     S.stompPace = math.clamp(S.stompPace, 1e-282, 1)
     S.resetThresholdIndex = math.clamp(math.floor(S.resetThresholdIndex), 1, #ResetThresholds)
     S.themeIndex = math.clamp(math.floor(S.themeIndex), 1, #ThemeNames)
@@ -5431,7 +5645,7 @@ bind(ExtraUI.ConfigLoad.MouseButton1Click:Connect(function()
         style(row, S.rapidWeapons[name], name .. "\032\032\047\032\032\079\078", name .. "\032\032\047\032\032\079\070\070")
     end
     table.clear(S.autoBuys)
-    if type(profile.autoBuys) == "\116\097\098\108\101" then
+    if ExtraUI.Capabilities.shopPurchase and type(profile.autoBuys) == "\116\097\098\108\101" then
         for name, enabled in pairs(profile.autoBuys) do
             if type(name) == "\115\116\114\105\110\103" and enabled == true then
                 S.autoBuys[name] = true
@@ -5467,8 +5681,13 @@ bind(ExtraUI.ConfigLoad.MouseButton1Click:Connect(function()
     style(ExtraUI.AntiLockBtn, S.antiLock,
         "\065\078\084\073\045\076\079\067\075\032\077\079\086\069\077\069\078\084\058\032\079\078", "\065\078\084\073\045\076\079\067\075\032\077\079\086\069\077\069\078\084\058\032\079\070\070")
     ExtraUI.updateAntiLock()
-    style(AutoArmor, S.autoArmor,
-        "\065\085\084\079\032\065\082\077\079\082\032\079\078\032\082\069\083\080\065\087\078\058\032\079\078", "\065\085\084\079\032\065\082\077\079\082\032\079\078\032\082\069\083\080\065\087\078\058\032\079\070\070")
+    if ExtraUI.Capabilities.shopPurchase then
+        style(AutoArmor, S.autoArmor,
+            "\065\085\084\079\032\065\082\077\079\082\032\079\078\032\082\069\083\080\065\087\078\058\032\079\078", "\065\085\084\079\032\065\082\077\079\082\032\079\078\032\082\069\083\080\065\087\078\058\032\079\070\070")
+    else
+        S.autoArmor = false
+        AutoArmor.Text = "\065\085\084\079\032\065\082\077\079\082\058\032\085\078\065\086\065\073\076\065\066\076\069\032\073\078\032\088\069\078\079"
+    end
     style(AntiStompBtn, S.antiStomp, "\065\078\084\073\032\083\084\079\077\080\058\032\079\078", "\065\078\084\073\032\083\084\079\077\080\058\032\079\070\070")
     if previouslyAntiStomp and not S.antiStomp then
         S.resetGeneration = S.resetGeneration + 1
@@ -5488,9 +5707,11 @@ bind(ExtraUI.ConfigLoad.MouseButton1Click:Connect(function()
     if S.macroLock then ExtraUI.ensureMacro(Me.Character) end
     ResetThresholdBtn.Text = "\082\069\083\069\084\032\065\084\058\032" .. ResetThresholds[S.resetThresholdIndex] .. "\032\072\080"
     local guns = ExtraUI.GunModButtons
-    style(ExtraUI.BulletModeBtn, S.bulletMode ~= 1,
-        "\066\085\076\076\069\084\032\068\073\082\069\067\084\073\079\078\058\032" .. ExtraUI.BulletModeNames[S.bulletMode],
-        "\066\085\076\076\069\084\032\068\073\082\069\067\084\073\079\078\058\032\067\085\082\083\079\082")
+    if ExtraUI.Capabilities.gunManager ~= false then
+        style(ExtraUI.BulletModeBtn, S.bulletMode ~= 1,
+            "\066\085\076\076\069\084\032\068\073\082\069\067\084\073\079\078\058\032" .. ExtraUI.BulletModeNames[S.bulletMode],
+            "\066\085\076\076\069\084\032\068\073\082\069\067\084\073\079\078\058\032\067\085\082\083\079\082")
+    end
     if S.bulletMode ~= 1 then
         local ok, reason = installRaycastHook()
         if not ok then say(reason) end
@@ -5498,12 +5719,16 @@ bind(ExtraUI.ConfigLoad.MouseButton1Click:Connect(function()
     style(guns.invisible, S.invisibleShot, "\073\078\086\073\083\073\066\076\069\032\083\072\079\084\058\032\079\078", "\073\078\086\073\083\073\066\076\069\032\083\072\079\084\058\032\079\070\070")
     style(guns.adaptive, S.adaptiveRapid, "\065\068\065\080\084\073\086\069\032\082\065\080\073\068\058\032\079\078", "\065\068\065\080\084\073\086\069\032\082\065\080\073\068\058\032\079\070\070")
     style(guns.recoil, S.noRecoil, "\078\079\032\082\069\067\079\073\076\058\032\079\078", "\078\079\032\082\069\067\079\073\076\058\032\079\070\070")
-    style(guns.spread, S.noSpread, "\068\066\032\078\079\032\083\080\082\069\065\068\058\032\079\078", "\068\066\032\078\079\032\083\080\082\069\065\068\058\032\079\070\070")
+    if ExtraUI.Capabilities.gunManager ~= false then
+        style(guns.spread, S.noSpread, "\068\066\032\078\079\032\083\080\082\069\065\068\058\032\079\078", "\068\066\032\078\079\032\083\080\082\069\065\068\058\032\079\070\070")
+    end
     style(guns.smg, S.infiniteSmg, "\083\077\071\032\065\085\084\079\032\082\069\076\079\065\068\058\032\079\078", "\083\077\071\032\065\085\084\079\032\082\069\076\079\065\068\058\032\079\070\070")
     style(guns.reload, S.autoReloadAll,
         "\065\085\084\079\032\082\069\076\079\065\068\032\065\076\076\032\071\085\078\083\058\032\079\078", "\065\085\084\079\032\082\069\076\079\065\068\032\065\076\076\032\071\085\078\083\058\032\079\070\070")
-    style(ExtraUI.InfiniteRangeBtn, S.infiniteRange,
-        "\073\078\070\073\078\073\084\069\032\082\065\078\071\069\058\032\079\078", "\073\078\070\073\078\073\084\069\032\082\065\078\071\069\058\032\079\070\070")
+    if ExtraUI.Capabilities.gunManager ~= false then
+        style(ExtraUI.InfiniteRangeBtn, S.infiniteRange,
+            "\073\078\070\073\078\073\084\069\032\082\065\078\071\069\058\032\079\078", "\073\078\070\073\078\073\084\069\032\082\065\078\071\069\058\032\079\070\070")
+    end
     if S.infiniteRange then
         local ok, reason = installRaycastHook()
         if not ok then say(reason) end
@@ -5616,7 +5841,11 @@ Env.DAH_PolishedCleanup = cleanup
 bind(Close.MouseButton1Click:Connect(cleanup))
 bind(Gui.Destroying:Connect(cleanup))
 style(AliveBtn, true, "\065\076\073\086\069\032\067\072\069\067\075\058\032\079\078", "\065\076\073\086\069\032\067\072\069\067\075\058\032\079\070\070")
-style(AutoArmor, S.autoArmor, "\065\085\084\079\032\065\082\077\079\082\032\079\078\032\082\069\083\080\065\087\078\058\032\079\078", "\065\085\084\079\032\065\082\077\079\082\032\079\078\032\082\069\083\080\065\087\078\058\032\079\070\070")
+if ExtraUI.Capabilities.shopPurchase then
+    style(AutoArmor, S.autoArmor, "\065\085\084\079\032\065\082\077\079\082\032\079\078\032\082\069\083\080\065\087\078\058\032\079\078", "\065\085\084\079\032\065\082\077\079\082\032\079\078\032\082\069\083\080\065\087\078\058\032\079\070\070")
+else
+    S.autoArmor = false
+end
 style(AntiStompBtn, S.antiStomp, "\065\078\084\073\032\083\084\079\077\080\058\032\079\078", "\065\078\084\073\032\083\084\079\077\080\058\032\079\070\070")
 style(AutoStompBtn, S.autoStomp, "\065\085\084\079\032\083\084\079\077\080\058\032\079\078", "\065\085\084\079\032\083\084\079\077\080\058\032\079\070\070")
 style(ExtraUI.StompAnimationBtn, S.stompAnimationEnabled,
