@@ -25,8 +25,8 @@ end
 Env.RacerIsXeno = string.find(string.lower(Env.RacerExecutorName),
     "\120\101\110\111", 1, true) ~= nil
 
- 
- 
+
+
 if not Env.RacerIsXeno and type(queue_on_teleport) == "\102\117\110\099\116\105\111\110" then
     pcall(function()
         queue_on_teleport([=[
@@ -37,7 +37,7 @@ if not Env.RacerIsXeno and type(queue_on_teleport) == "\102\117\110\099\116\105\
     end)
 end
 
- 
+
 for _, name in ipairs({
     "\083\112\101\099\116\114\097\083\101\108\101\099\116\067\108\101\097\110\117\112", "\068\065\072\095\076\105\116\101\067\108\101\097\110\117\112", "\068\065\072\095\080\111\108\105\115\104\101\100\067\108\101\097\110\117\112",
     "\068\065\072\095\079\112\116\105\109\105\122\101\100\067\108\101\097\110\117\112", "\068\065\072\095\065\108\108\073\110\079\110\101\095\067\108\101\097\110\117\112", "\068\065\072\095\065\105\109\071\117\105\067\108\101\097\110\117\112"
@@ -63,18 +63,18 @@ for _, name in ipairs({"\082\065\067\069\082\095\085\073", "\083\080\069\067\084
     if old then old:Destroy() end
 end
 
-local MAX_TARGETS = 1000  
+local MAX_TARGETS = 1000 
 local S: any = {
     closed = false,
     multi = false,
-    antiLock = false,  
-    aliveOnly = true,      
-    primary = nil,         
+    antiLock = false, 
+    aliveOnly = true,     
+    primary = nil,        
     aimPlayer = nil,
     aimRecord = nil,
     silent = false,
     wallBang = false,
-    bulletMode = 1,        
+    bulletMode = 1,       
     bulletStep = 0,
     forceHit = false,
     aura = false,
@@ -108,7 +108,7 @@ local S: any = {
     autoBuyIndex = 1,
     antiStomp = true,
     autoStomp = true,
-    stompSuppressed = false,  
+    stompSuppressed = false, 
     selectedStomp = false,
     selectedStompTarget = nil,
     selectedStompGeneration = 0,
@@ -136,7 +136,21 @@ local S: any = {
     standAttack4Target = nil,
     standAttack5Target = nil,
     standSnipeTarget = nil,
-    standSnipeReturnCFrame = nil,
+    standCounterAttackTarget = nil,
+    standDrivebyTarget = nil,
+    standAmbushTarget = nil,
+    standAmbushRushTarget = nil,
+    standAmbushHitAfter = nil,
+    standCounterTarget = nil,
+    standCounterPending = nil,
+    standCounterShots = {},
+    standCounterHandled = {},
+    standCounterReportedDown = {},
+    standCounterBulletHooked = false,
+    standSavedOrder = nil,
+    standResumeGeneration = 0,
+    auraProtectedPlayer = nil,
+    auraProtectMissingAt = nil,
     standRevolverRapidBefore = nil,
     standReturnCFrame = nil,
     standHoldRestore = nil,
@@ -146,7 +160,7 @@ local S: any = {
     chatSpyOriginal = nil,
     jumpBypass = false,
     jumpBypassGeneration = 0,
-    standEnabledRapid = nil,        
+    standEnabledRapid = nil,       
     standAttack2FinisherPlayed = false,
     standAttack2LaunchQueued = false,
     standLastCommand = nil,
@@ -169,7 +183,7 @@ local S: any = {
     strafeRadius = 7.5,
     uiScale = 1,
     rapidWeapons = {},
-    adaptiveRapid = false,  
+    adaptiveRapid = false, 
     lastAttemptWeaponName = nil,
     noRecoil = false,
     invisibleShot = false,
@@ -185,11 +199,11 @@ local S: any = {
     resetCharacter = nil,
     resetInFlight = false,
     antiStompReady = false,
-    antiStompTriggeredCharacter = nil,  
+    antiStompTriggeredCharacter = nil, 
     antiStompConfirmedCharacter = nil,
     antiStompSpawnGraceUntil = 0,
     lastResetAt = 0,
-    resetGeneration = 0,  
+    resetGeneration = 0, 
     cursorKeyEnabled = true,
     macroLock = false,
     notify = {
@@ -211,9 +225,9 @@ ExtraUI.Capabilities = {
     connections = type(getconnections) == "\102\117\110\099\116\105\111\110"
         and type(debug) == "\116\097\098\108\101" and type(debug.getupvalues) == "\102\117\110\099\116\105\111\110",
 }
- 
- 
- 
+
+
+
 ExtraUI.Capabilities.shopPurchase = not Env.RacerIsXeno
 Env.RacerFeatureSupport = ExtraUI.Capabilities
 ExtraUI.Capabilities.drawing = false
@@ -225,13 +239,13 @@ if type(Drawing) == "\116\097\098\108\101" and type(Drawing.new) == "\102\117\11
     end
 end
 local DeathPosition = nil
-local PlayerConnections = {}  
+local PlayerConnections = {} 
 local RowConnections = {}
 local Rows = {}
 local TargetSet, TargetList, Records = {}, {}, {}
-local TargetByModelName = {}  
-local Folders = {}  
-local ResolutionTokens = {}  
+local TargetByModelName = {} 
+local Folders = {} 
+local ResolutionTokens = {} 
 local NextResolutionToken = 0
 local TickGeneration = 0
 local RenderConnection = nil
@@ -250,8 +264,8 @@ local AutoStompGeneration = 0
 local NextAutoStompAt = 0
 local AutoStompTrackCharacter = nil
 local AutoStompTrack = nil
-local updateLoops  
-local targetTick  
+local updateLoops 
+local targetTick 
 
 local C_BG = Color3.fromRGB(11, 15, 19)
 local C_PANEL = Color3.fromRGB(20, 27, 32)
@@ -280,7 +294,7 @@ local function make(className, props)
     return instance
 end
 local function round(obj, radius)
-     
+    
     return obj
 end
 local function label(parent, title, y, height, color, size)
@@ -325,7 +339,7 @@ local function style(btn, value, on, off)
     if stroke then stroke.Color = value and C_ACCENT or C_BORDER end
 end
 
- 
+
 local Gui = make("\083\099\114\101\101\110\071\117\105", {
     Name = "\082\065\067\069\082\095\085\073", Parent = PlayerGui, ResetOnSpawn = false,
     DisplayOrder = 2200, IgnoreGuiInset = true,
@@ -604,8 +618,8 @@ ExtraUI.StandSetSelected = button(ExtraUI.StandPage, "\085\083\069\032\083\069\0
 ExtraUI.StandToggle = button(ExtraUI.StandPage, "\076\073\083\084\069\078\058\032\079\070\070", 12, 175, 342, 38)
 ExtraUI.StandStop = button(ExtraUI.StandPage, "\083\084\079\080\032\067\085\082\082\069\078\084\032\079\082\068\069\082", 12, 222, 342, 34)
 label(ExtraUI.StandPage, "\079\087\078\069\082\032\067\072\065\084\032\067\079\077\077\065\078\068\083", 268, 25, C_ACCENT, 11)
-label(ExtraUI.StandPage, "\033\097\116\116\097\099\107\032\049\045\053\032\047\032\033\097\117\114\097\032\047\032\033\115\116\111\112\032\047\032\033\098\114\105\110\103", 292, 24, C_TEXT, 11)
-label(ExtraUI.StandPage, "\033\099\111\109\101\032\047\032\033\102\111\108\108\111\119\032\047\032\033\103\111\116\111\032\047\032\033\098\097\099\107\032\047\032\033\102\097\099\101", 318, 24, C_TEXT, 11)
+label(ExtraUI.StandPage, "\033\097\116\116\097\099\107\032\049\045\053\032\047\032\033\115\110\105\112\101\032\047\032\033\100\111\119\110\032\047\032\033\115\116\111\112", 292, 24, C_TEXT, 11)
+label(ExtraUI.StandPage, "\033\112\114\111\116\101\099\116\032\047\032\033\099\111\117\110\116\101\114\032\047\032\033\100\114\105\118\101\098\121\032\047\032\033\097\109\098\117\115\104", 318, 24, C_TEXT, 11)
 ExtraUI.ChatSpyBtn = button(ExtraUI.StandPage, "\067\072\065\084\032\083\080\089\058\032\079\070\070", 12, 343, 166, 30)
 ExtraUI.JumpBypassBtn = button(ExtraUI.StandPage, "\074\085\077\080\032\066\089\080\065\083\083\058\032\079\070\070", 188, 343, 166, 30)
 ExtraUI.StandAfkBtn = button(ExtraUI.StandPage, "\080\069\082\077\065\078\069\078\084\032\065\070\075\058\032\079\070\070", 12, 381, 342, 30)
@@ -613,7 +627,7 @@ ExtraUI.StandStatus = label(ExtraUI.StandPage, "\083\116\097\110\100\105\110\103
 ExtraUI.StandStatus.TextWrapped = true
 ExtraUI.StandStatus.TextTruncate = Enum.TextTruncate.None
 
- 
+
 ExtraUI.Notify = {watchers = {}, knownModels = {}, lastRespawnAt = {}, log = {}}
 label(ExtraUI.NotifyPage, "\078\079\084\073\070\073\067\065\084\073\079\078\083\032\032\047\032\032\083\069\076\069\067\084\069\068\032\084\065\082\071\069\084\083", 15, 23, C_ACCENT, 12)
 label(ExtraUI.NotifyPage, "\084\114\097\099\107\115\032\115\101\108\101\099\116\101\100\032\112\108\097\121\101\114\115\032\111\110\108\121\059\032\110\111\032\099\111\110\116\105\110\117\111\117\115\032\115\099\097\110\115\046", 39, 20, C_FAINT, 10)
@@ -703,7 +717,7 @@ ExtraUI.Notify.emit = function(key, message)
         for _, child in ipairs(ExtraUI.NotifyHistory:GetChildren()) do
             if child:IsA("\084\101\120\116\076\097\098\101\108") and child ~= entry
                 and child.LayoutOrder < math.huge then
-                 
+                
                 local oldest = child
                 for _, other in ipairs(ExtraUI.NotifyHistory:GetChildren()) do
                     if other:IsA("\084\101\120\116\076\097\098\101\108") and other.LayoutOrder > oldest.LayoutOrder then
@@ -1103,7 +1117,7 @@ local RapidLast = setmetatable({}, {__mode = "\107"})
 local ReloadLast = setmetatable({}, {__mode = "\107"})
 local GunRows = {}
 local GunRowCount = 0
- 
+
 local FixedPace = {
     ["\091\082\101\118\111\108\118\101\114\093"] = 0.01,
     ["\091\068\111\117\098\108\101\045\066\097\114\114\101\108\032\083\071\093"] = 0.01,
@@ -1145,8 +1159,8 @@ end
 Rapid.getPace = function(tool)
     return 0.01
 end
- 
- 
+
+
 Rapid.lastShotAt = function(tool)
     return RapidLast[tool] or 0
 end
@@ -1302,8 +1316,8 @@ do
                         }
                         ShotVisualOriginal[manager] = originals
                     end
-                     
-                     
+                    
+                    
                     manager.BulletTrails = function(_, bullet)
                         if typeof(bullet) ~= "\073\110\115\116\097\110\099\101" then return end
                         if bullet:IsA("\066\097\115\101\080\097\114\116") then
@@ -1337,18 +1351,23 @@ do
             if ok and type(handler) == "\116\097\098\108\101"
                 and type(handler.ReplicateBullets) == "\102\117\110\099\116\105\111\110" then
                 local originals = ShotVisualOriginal[handler]
-                if S.invisibleShot then
+                if S.invisibleShot or S.standCounterTarget then
                     if not originals then
                         originals = {ReplicateBullets = handler.ReplicateBullets}
                         ShotVisualOriginal[handler] = originals
                     end
                     handler.ReplicateBullets = function(self, shot)
-                        if shot and shot.Player == Me then return end
+                        if ExtraUI.standObserveShot then
+                            pcall(ExtraUI.standObserveShot, shot)
+                        end
+                        if S.invisibleShot and shot and shot.Player == Me then return end
                         return originals.ReplicateBullets(self, shot)
                     end
+                    S.standCounterBulletHooked = S.standCounterTarget ~= nil
                 elseif originals then
                     handler.ReplicateBullets = originals.ReplicateBullets
                     ShotVisualOriginal[handler] = nil
+                    S.standCounterBulletHooked = false
                 end
             end
         end
@@ -1794,7 +1813,7 @@ local function updateOwnRoot()
     OwnRoot = c and c:FindFirstChild("\072\117\109\097\110\111\105\100\082\111\111\116\080\097\114\116", true) or nil
 end
 
- 
+
 local function refreshArmorShops()
     table.clear(ArmorShops)
     local store = Workspace:FindFirstChild("\083\116\111\114\101")
@@ -1833,7 +1852,7 @@ ExtraUI.clickShop = function(click, head)
     if ExtraUI.Capabilities.clickDetector then
         return pcall(fireclickdetector, click, 0, "\109\111\117\115\101\099\108\105\099\107")
     end
-     
+    
     local camera = Workspace.CurrentCamera
     if not camera or not head then return false end
     local oldCamera = camera.CFrame
@@ -2045,8 +2064,8 @@ local function ownDangerReason(character)
     end
     return nil
 end
- 
- 
+
+
 ExtraUI.confirmAntiStompReset = function(character, signal)
     if S.resetCharacter ~= character then return end
     S.antiStompConfirmedCharacter = character
@@ -2094,15 +2113,15 @@ local function resetBeforeStomp(character, reason)
         while not S.closed and S.antiStomp and S.resetGeneration == generation
             and S.resetCharacter == character and Me.Character == character do
             task.wait(1.25)
-             
-             
+            
+            
             if S.closed or not S.antiStomp or S.resetGeneration ~= generation
                 or S.resetCharacter ~= character or Me.Character ~= character
                 or not character.Parent then break end
             local currentHum = character:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
             if not currentHum then break end
             if not ownDangerReason(character) and currentHum.Health > 0 then
-                 
+                
                 S.resetInFlight = false
                 S.resetCharacter = nil
                 S.antiStompReady = true
@@ -2168,7 +2187,7 @@ local function watchOwnCharacter(character)
     end)
     OwnCharacterGeneration = OwnCharacterGeneration + 1
     local generation = OwnCharacterGeneration
-     
+    
     if ExtraUI.lastAntiStompModel ~= character then
         local previousModel = ExtraUI.lastAntiStompModel
         local hadPendingReset = S.resetInFlight
@@ -2193,9 +2212,9 @@ local function watchOwnCharacter(character)
             if not hum or S.resetInFlight then return end
             if not S.antiStompReady then
                 if os.clock() < S.antiStompSpawnGraceUntil then return end
-                 
-                 
-                 
+                
+                
+                
                 if ExtraUI.antiStompInitialModel ~= character and
                     (hum.Health <= ResetThresholds[S.resetThresholdIndex] + 5
                         or ownDangerReason(character)) then return end
@@ -2244,7 +2263,7 @@ local function watchOwnCharacter(character)
             OwnCharacterConnections[#OwnCharacterConnections + 1] = effects.ChildAdded:Connect(watchFlag)
         end
         evaluate()
-         
+        
         task.delay(1.55, function()
             if not S.closed and Me.Character == character
                 and generation == OwnCharacterGeneration then evaluate() end
@@ -2259,8 +2278,8 @@ bind(ExtraUI.MacroBtn.MouseButton1Click:Connect(function()
     say(S.macroLock and "\077\097\099\114\111\032\112\101\114\115\105\115\116\032\101\110\097\098\108\101\100\046" or "\077\097\099\114\111\032\112\101\114\115\105\115\116\032\100\105\115\097\098\108\101\100\046")
 end))
 
- 
- 
+
+
 local function downedPlayerBelow(character)
     local lower = character:FindFirstChild("\076\111\119\101\114\084\111\114\115\111")
     local upper = character:FindFirstChild("\085\112\112\101\114\084\111\114\115\111")
@@ -2381,7 +2400,7 @@ bind(Me.CharacterAdded:Connect(function(character)
         ExtraUI.Notify.emit("\111\119\110\082\101\115\112\097\119\110", "\089\111\117\032\114\101\115\112\097\119\110\101\100")
     end
     ExtraUI.Notify.previousOwnCharacter = character
-     
+    
     task.delay(0.25, function() if not S.closed then updateOwnRoot() end end)
     watchOwnCharacter(character)
     ExtraUI.runSpawnSequence(character)
@@ -2460,7 +2479,7 @@ local function partFor(rec)
     return rec.root
 end
 local function predictedPoint(rec, part, lead)
-     
+    
     return part.Position + rec.root.AssemblyLinearVelocity * lead
 end
 local function isFolder(parent)
@@ -2488,8 +2507,8 @@ local Hook: any = {
 }
 Env.__SPECTRA_MULTI_RAYCAST = Hook
 
- 
- 
+
+
 Hook.getMuzzle = function(tool)
     local handle = tool and tool:FindFirstChild("\072\097\110\100\108\101")
     if not handle or not handle:IsA("\066\097\115\101\080\097\114\116") then return nil end
@@ -2508,7 +2527,7 @@ Hook.getBulletDirection = function()
     if not basis then return nil end
     local angle
     if S.bulletMode == 2 then
-         
+        
         angle = (S.bulletStep % 16) * (2 * math.pi / 16)
         S.bulletStep = S.bulletStep + 1
     elseif S.bulletMode == 3 then
@@ -2521,10 +2540,10 @@ Hook.getBulletDirection = function()
     return radial.Magnitude > 0.001 and radial.Unit or nil
 end
 
- 
- 
- 
- 
+
+
+
+
 Hook.rayBoxDistance = function(origin, direction, length, part, padding)
     local localOrigin = part.CFrame:PointToObjectSpace(origin)
     local localDirection = part.CFrame:VectorToObjectSpace(direction)
@@ -2554,8 +2573,8 @@ end
 Hook.resolveShotRecord = function(p)
     local rec = validModel(p.Character) or validModel(candidateNamed(Workspace, p))
     if rec then return rec end
-     
-     
+    
+    
     for folder in pairs(Folders) do
         if folder.Parent == Workspace then
             rec = validModel(candidateNamed(folder, p))
@@ -2569,9 +2588,9 @@ Hook.penetrationRaycast = function(origin, point, maxRange, cameraAim)
     if typeof(origin) ~= "\086\101\099\116\111\114\051" or typeof(point) ~= "\086\101\099\116\111\114\051" then
         return nil, nil
     end
-     
-     
-     
+    
+    
+    
     local rayOrigin = cameraAim and Workspace.CurrentCamera
         and Workspace.CurrentCamera.CFrame.Position or origin
     local delta = point - rayOrigin
@@ -2580,8 +2599,8 @@ Hook.penetrationRaycast = function(origin, point, maxRange, cameraAim)
     local direction = delta.Unit
     local bestDistance, bestPart, bestPlayer = length + 1, nil, nil
     local selectedDistance, selectedPart, selectedPlayer = nil, nil, nil
-     
-     
+    
+    
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= Me then
             local rec = Hook.resolveShotRecord(p)
@@ -2593,9 +2612,9 @@ Hook.penetrationRaycast = function(origin, point, maxRange, cameraAim)
                     if separation < 8 then
                         for _, body in ipairs(rec.model:GetChildren()) do
                             if body:IsA("\066\097\115\101\080\097\114\116") and body ~= rec.root then
-                                 
-                                 
-                                 
+                                
+                                
+                                
                                 local padding = cameraAim and math.min(4,
                                     math.max(0.35, along * 0.03)) or 0
                                 local distance = Hook.rayBoxDistance(rayOrigin, direction,
@@ -2616,8 +2635,8 @@ Hook.penetrationRaycast = function(origin, point, maxRange, cameraAim)
             end
         end
     end
-     
-     
+    
+    
     if selectedPart then
         bestDistance, bestPart, bestPlayer =
             selectedDistance, selectedPart, selectedPlayer
@@ -2632,8 +2651,8 @@ Hook.penetrationRaycast = function(origin, point, maxRange, cameraAim)
     }, bestPlayer
 end
 
- 
- 
+
+
 Hook.nextMultiShot = function()
     local count = #TargetList
     if count == 0 then return nil, nil, nil end
@@ -2642,7 +2661,7 @@ Hook.nextMultiShot = function()
         local target = TargetList[Hook.multiCursor]
         local rec = Records[target]
         if not recordPresent(target, rec) then
-             
+            
             rec = Hook.resolveShotRecord(target)
             if rec and TargetSet[target] then Records[target] = rec end
         end
@@ -2719,8 +2738,8 @@ local function installRaycastHook()
             local origin = Hook.getMuzzle(tool)
             local direct = S.autoKill or S.aura or S.forceHit
 
-             
-             
+            
+            
             if not direct and S.bulletMode ~= 1 and origin then
                 local radial = Hook.getBulletDirection()
                 if radial then mousePoint = origin + radial * maxRange end
@@ -2734,7 +2753,7 @@ local function installRaycastHook()
                     or forcedPlayer and Records[forcedPlayer] or Hook.record
                 local part = (lockedPlayer or forcedPlayer)
                     and selectedRecord and partFor(selectedRecord) or Hook.part
-                 
+                
                 if S.multi and not S.autoKill and not S.aura
                     and (S.silent or S.forceHit) then
                     selectedPlayer, selectedRecord, part = Hook.nextMultiShot()
@@ -2768,8 +2787,8 @@ local function installRaycastHook()
                 end
             end
 
-             
-             
+            
+            
             if S.wallBang then
                 Hook.wallShots = (Hook.wallShots or 0) + 1
                 local hit, victim
@@ -2787,8 +2806,8 @@ local function installRaycastHook()
                     ExtraUI.WallBangInfo.Text = ("\087\066\032\083\072\079\084\083\058\032\037\100\032\124\032\110\111\032\114\105\103\032\111\110\032\115\104\111\116\032\108\105\110\101")
                         :format(Hook.wallShots)
                 end
-                 
-                 
+                
+                
             end
         end
         return original(self, tool, mousePoint, player, shotRange, ...)
@@ -2853,7 +2872,7 @@ local function clearTarget()
     S.aimPlayer, S.aimRecord = nil, nil
     S.screenDistance2, S.permitted = math.huge, false
     Hook.part, Hook.record = nil, nil
-    Hook.enabled = false  
+    Hook.enabled = false 
     if ActiveLabel.Text ~= "\065\105\109\032\116\097\114\103\101\116\058\032\110\111\110\101" then ActiveLabel.Text = "\065\105\109\032\116\097\114\103\101\116\058\032\110\111\110\101" end
 end
 local function stopBring()
@@ -2887,8 +2906,8 @@ local function applyRecord(p, rec)
     ExtraUI.Notify.attach(p, rec)
 end
 local function findRecordInWorkspace(p, token)
-     
-     
+    
+    
     local rec = validModel(p.Character)
     if not rec then rec = validModel(candidateNamed(Workspace, p)) end
     if rec then return rec end
@@ -2918,8 +2937,8 @@ local function requestResolution(p)
             if attempt == 1 then task.wait(0.22)
             elseif attempt == 2 then task.wait(0.70) end
         end
-         
-         
+        
+        
         applyRecord(p, nil)
     end)
 end
@@ -2929,8 +2948,8 @@ local function watchFolder(folder)
         local p = TargetByModelName[child.Name]
         if p then requestResolution(p) end
     end)
-     
-     
+    
+    
     for i = 1, #TargetList do
         local p = TargetList[i]
         if not recordPresent(p, Records[p]) and candidateNamed(folder, p) then
@@ -2947,7 +2966,7 @@ local function unwatchFolder(folder)
         if rec and rec.model.Parent == folder then invalidatePlayer(p) end
     end
 end
- 
+
 for _, child in ipairs(Workspace:GetChildren()) do watchFolder(child) end
 bind(Workspace.ChildAdded:Connect(function(child)
     if isFolder(child) then watchFolder(child) end
@@ -2961,7 +2980,7 @@ local function deselectPlayer(p)
     TargetSet[p] = nil
     TargetByModelName[p.Name] = nil
     TargetByModelName[tostring(p.UserId)] = nil
-    ResolutionTokens[p] = nil  
+    ResolutionTokens[p] = nil 
     local cs = PlayerConnections[p]
     if cs then disconnectMany(cs); PlayerConnections[p] = nil end
     for i = #TargetList, 1, -1 do
@@ -3020,11 +3039,11 @@ local function choosePlayer(p, knownRecord)
             syncLabels()
             return
         end
-         
+        
         for i = #TargetList, 1, -1 do deselectPlayer(TargetList[i]) end
         if p and addTarget(p, knownRecord) then S.primary = p end
     else
-         
+        
         if p then
             if TargetSet[p] then deselectPlayer(p)
             elseif addTarget(p, knownRecord) then S.primary = p end
@@ -3047,8 +3066,8 @@ local function pickNearCursor()
     local radius = 100
     local bestPlayer, bestRecord, bestDistance2 = nil, nil, radius * radius
     local ownFolder = Me.Character and Me.Character.Parent
-     
-     
+    
+    
     local folderChecks = 0
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= Me then
@@ -3097,7 +3116,7 @@ local function pickNearCursor()
         say("\067\117\114\115\111\114\032\112\105\099\107\058\032\064" .. bestPlayer.Name .. "\032\117\110\115\101\108\101\099\116\101\100\046")
         return
     end
-     
+    
     if not S.dot then
         S.dot = true
         style(DotBtn, true, "\066\079\088\032\043\032\076\073\078\069\058\032\079\078", "\066\079\088\032\043\032\076\073\078\069\058\032\079\070\070")
@@ -3112,12 +3131,12 @@ local function pickNearCursor()
         choosePlayer(bestPlayer, bestRecord)
     end
     if not RenderConnection then updateLoops() end
-     
+    
     targetTick()
     say("\067\117\114\115\111\114\032\112\105\099\107\058\032\064" .. bestPlayer.Name .. "\032\115\101\108\101\099\116\101\100\046")
 end
 
- 
+
 local function filterRows()
     local query = Search.Text:lower()
     for p, row in pairs(Rows) do
@@ -3224,7 +3243,7 @@ targetTick = function()
                     local dx, dy = projected.X - cx, projected.Y - cy
                     local distance2 = dx * dx + dy * dy
                     do
-                         
+                        
                         local score = distance2 * (S.aimPlayer == p and 0.78 or 1)
                         if score < firstScore then
                             secondP, secondRec, secondPart, secondPoint, secondScore =
@@ -3240,15 +3259,15 @@ targetTick = function()
             end
         end
     end
-     
+    
     local p, rec, part, projected
     if firstRec and withinWallLine(cam, firstPart, firstRec) then
         p, rec, part, projected = firstP, firstRec, firstPart, firstPoint
     elseif secondRec and withinWallLine(cam, secondPart, secondRec) then
         p, rec, part, projected = secondP, secondRec, secondPart, secondPoint
     end
-     
-     
+    
+    
     if not rec and (S.silent or S.forceHit) then
         local selected = S.primary
         local selectedRecord = selected and Records[selected]
@@ -3292,7 +3311,7 @@ local function clickMouse()
         end)
         return true
     end
-     
+    
     local character = Me.Character
     local equipped = character and character:FindFirstChildOfClass("\084\111\111\108")
     if equipped and equipped:FindFirstChild("\082\101\115\112\111\110\115\101") then
@@ -3325,8 +3344,8 @@ local function triggerTick()
     end
 end
 
- 
-     
+
+    
 updateLoops = function()
     local needTarget = #TargetList > 0 and (S.silent or S.forceHit
         or S.trigger or S.cameraAim or S.dot)
@@ -3343,7 +3362,7 @@ updateLoops = function()
     else
         clearTarget()
     end
-     
+    
     if S.cameraAim and #TargetList > 0 and not RenderConnection then
         RenderConnection = RunService.RenderStepped:Connect(function(dt)
             local rec = S.aimRecord
@@ -3364,7 +3383,7 @@ updateLoops = function()
     end
 end
 
- 
+
 ExtraUI.selectAllTargets = function()
     if not S.multi then S.multi = true end
     for _, player in ipairs(Players:GetPlayers()) do
@@ -3562,7 +3581,7 @@ bind(AntiStompBtn.MouseButton1Click:Connect(function()
         say("\065\110\116\105\032\115\116\111\109\112\032\097\114\109\101\100\058\032\114\101\115\101\116\032\114\101\116\114\105\101\115\032\115\116\111\112\032\111\110\032\099\111\110\102\105\114\109\101\100\032\100\101\097\116\104\032\111\114\032\114\101\115\112\097\119\110\046")
         resetBeforeStomp(Me.Character, ownDangerReason(Me.Character))
     else
-         
+        
         S.resetGeneration = S.resetGeneration + 1
         S.resetCharacter = nil
         S.resetInFlight = false
@@ -3809,9 +3828,9 @@ local function restoreBringStompWhenClear(target)
         end
     end)
 end
- 
- 
- 
+
+
+
 ExtraUI.standSendChat = function(message)
     if S.closed then return false end
     local chat = game:GetService("\084\101\120\116\067\104\097\116\083\101\114\118\105\099\101")
@@ -3821,7 +3840,7 @@ ExtraUI.standSendChat = function(message)
         local ok = pcall(function() general:SendAsync(message) end)
         if ok then return true end
     end
-     
+    
     local legacy = ReplicatedStorage:FindFirstChild("\068\101\102\097\117\108\116\067\104\097\116\083\121\115\116\101\109\067\104\097\116\069\118\101\110\116\115")
     local remote = legacy and legacy:FindFirstChild("\083\097\121\077\101\115\115\097\103\101\082\101\113\117\101\115\116")
     if remote and remote:IsA("\082\101\109\111\116\101\069\118\101\110\116") then
@@ -3833,7 +3852,21 @@ ExtraUI.standReportResult = function(report, outcome, detail)
     if not report or report.sent then return end
     report.sent = true
     if S.standChatReport == report then S.standChatReport = nil end
-     
+    if report.command == "\099\111\117\110\116\101\114" then
+        if outcome == "\070\065\073\076\069\068" then
+            ExtraUI.standStatus("\067\111\117\110\116\101\114\032\101\110\100\101\100\032\119\105\116\104\111\117\116\032\097\032\099\111\110\102\105\114\109\101\100\032\100\111\119\110\046")
+            return
+        end
+        if outcome == "\083\085\067\067\069\083\083" and report.target then
+            local record = Hook.resolveShotRecord(report.target)
+            local model = report.targetModel or record and record.model
+            if model and S.standCounterReportedDown[report.target] == model then
+                return
+            end
+            if model then S.standCounterReportedDown[report.target] = model end
+        end
+    end
+    
     local message = ({
         SUCCESS = "\115\117\099\099\101\115\115",
         FAILED = "\102\097\105\108\101\100",
@@ -3856,25 +3889,82 @@ ExtraUI.standConfirmedDead = function(record)
     local dead = effects and effects:FindFirstChild("\068\101\097\100")
     return dead and dead:IsA("\066\111\111\108\086\097\108\117\101") and dead.Value == true or false
 end
+ExtraUI.standConfirmedDown = function(player, priorRecord)
+    local function isDown(record)
+        local model = record and record.model
+        local hum = record and record.humanoid
+        local effects = model and model:FindFirstChild("\066\111\100\121\069\102\102\101\099\116\115")
+        local ko = effects and effects:FindFirstChild("\075\046\079")
+        local dead = effects and effects:FindFirstChild("\068\101\097\100")
+        return hum and (hum.Health <= 0 or ko and ko.Value or dead and dead.Value)
+            or false
+    end
+    return isDown(priorRecord)
+        or isDown(player and Hook.resolveShotRecord(player) or nil)
+end
 local function stopAutoKill(message, keepStompPaused)
     if S.standAttackTarget then
         local report = S.standChatReport
+        local downOnly = S.standDownOnlyTarget == S.standAttackTarget
+        local record = Hook.lockRecord
+        local confirmedDown = downOnly and (report and report.downConfirmed
+            or ExtraUI.standConfirmedDown(S.standAttackTarget, record))
+        if confirmedDown and S.standCounterAttackTarget == S.standAttackTarget then
+            local current = Hook.resolveShotRecord(S.standAttackTarget)
+            S.standCounterHandled[S.standAttackTarget] = current and current.model
+                or record and record.model or true
+            S.standCounterShots[S.standAttackTarget] = nil
+        end
         if report and not report.sent then
             local confirmed = report.stompSent
                 and ExtraUI.standConfirmedDead(Hook.lockRecord)
-            if confirmed then
+            if confirmedDown then
+                ExtraUI.standReportResult(report, "\083\085\067\067\069\083\083",
+                    "\116\097\114\103\101\116\032\099\111\110\102\105\114\109\101\100\032\100\111\119\110\059\032\110\111\032\115\116\111\109\112")
+            elseif confirmed then
                 ExtraUI.standReportResult(report, "\083\085\067\067\069\083\083",
                     "\115\116\111\109\112\032\115\101\110\116\059\032\116\097\114\103\101\116\032\099\111\110\102\105\114\109\101\100\032\100\101\097\100")
             elseif report.target and report.target.Parent ~= Players then
                 ExtraUI.standReportResult(report, "\084\065\082\071\069\084\032\076\069\070\084",
                     "\112\108\097\121\101\114\032\100\105\115\099\111\110\110\101\099\116\101\100\032\098\101\102\111\114\101\032\107\105\108\108\032\099\111\110\102\105\114\109\097\116\105\111\110")
+            elseif downOnly then
+                task.delay(1.25, function()
+                    if report.sent then return end
+                    if ExtraUI.standConfirmedDown(report.target) then
+                        if report.command == "\099\111\117\110\116\101\114" then
+                            local current = Hook.resolveShotRecord(report.target)
+                            S.standCounterHandled[report.target] = current and current.model
+                                or true
+                            S.standCounterShots[report.target] = nil
+                        end
+                        ExtraUI.standReportResult(report, "\083\085\067\067\069\083\083",
+                            "\116\097\114\103\101\116\032\099\111\110\102\105\114\109\101\100\032\100\111\119\110\032\097\102\116\101\114\032\114\101\112\108\105\099\097\116\105\111\110\032\100\101\108\097\121")
+                    elseif report.command == "\099\111\117\110\116\101\114" then
+                        report.sent = true
+                        if S.standChatReport == report then S.standChatReport = nil end
+                        ExtraUI.standStatus("\067\111\117\110\116\101\114\032\101\110\100\101\100\032\119\105\116\104\111\117\116\032\097\032\099\111\110\102\105\114\109\101\100\032\100\111\119\110\046")
+                    else
+                        ExtraUI.standReportResult(report, "\070\065\073\076\069\068",
+                            "\116\097\114\103\101\116\032\110\111\116\032\099\111\110\102\105\114\109\101\100\032\100\111\119\110")
+                    end
+                end)
             else
                 ExtraUI.standReportResult(report, "\070\065\073\076\069\068",
                     (message or "\097\116\116\097\099\107\032\101\110\100\101\100\032\119\105\116\104\111\117\116\032\099\111\110\102\105\114\109\101\100\032\115\116\111\109\112\032\097\110\100\032\107\105\108\108")
                         :gsub("\094\065\117\116\111\032\107\105\108\108\058\032", ""):gsub("\094\083\116\097\110\100\058\032", ""))
             end
         end
-        local snipeReturn = S.standSnipeTarget and S.standSnipeReturnCFrame
+        if (confirmedDown or (report and report.stompSent
+                and ExtraUI.standConfirmedDead(Hook.lockRecord)))
+            and report and S.standSavedOrder
+            and S.standSavedOrder.command == report.command
+            and not (report.command == "\099\111\117\110\116\101\114"
+                and string.lower(S.standSavedOrder.argument or "") == "\109\101") then
+            S.standSavedOrder = nil
+            Env.SpectraStandSavedOrder = nil
+        end
+        local returnToOwner = S.standEnabled and S.standOwner ~= nil
+            and S.standOwner ~= Me
         S.standAttackTarget = nil
         S.standDownOnlyTarget = nil
         S.standAttack2Target = nil
@@ -3882,11 +3972,15 @@ local function stopAutoKill(message, keepStompPaused)
         S.standAttack4Target = nil
         S.standAttack5Target = nil
         S.standSnipeTarget = nil
-        S.standSnipeReturnCFrame = nil
+        S.standCounterAttackTarget = nil
+        S.standDrivebyTarget = nil
+        S.standAmbushTarget = nil
+        S.standAmbushRushTarget = nil
+        S.standAmbushHitAfter = nil
         S.standAttack2FinisherPlayed = false
         S.standAttack2LaunchQueued = false
         if ExtraUI.standEndCinematic then ExtraUI.standEndCinematic() end
-         
+        
         style(ForceHitBtn, S.forceHit, "\070\079\082\067\069\032\072\073\084\058\032\079\078", "\070\079\082\067\069\032\072\073\084\058\032\079\070\070")
         S.quietAutoKill = S.standPreviousQuiet
         S.autoKillVoid = S.standPreviousVoid
@@ -3894,7 +3988,7 @@ local function stopAutoKill(message, keepStompPaused)
             "\065\085\084\079\032\075\073\076\076\032\086\079\073\068\032\066\076\073\078\075\058\032\079\078", "\065\085\084\079\032\075\073\076\076\032\086\079\073\068\032\066\076\073\078\075\058\032\079\070\070")
         style(ExtraUI.QuietKillBtn, S.quietAutoKill,
             "\081\085\073\069\084\032\065\085\084\079\032\075\073\076\076\058\032\079\078", "\081\085\073\069\084\032\065\085\084\079\032\075\073\076\076\058\032\079\070\070")
-         
+        
         S.rapidWeapons["\091\082\101\118\111\108\118\101\114\093"] = S.standRevolverRapidBefore or nil
         S.standRevolverRapidBefore = nil
         S.standEnabledRapid = nil
@@ -3905,15 +3999,19 @@ local function stopAutoKill(message, keepStompPaused)
             style(Rapid.rows["\091\082\101\118\111\108\118\101\114\093"], S.rapidWeapons["\091\082\101\118\111\108\118\101\114\093"],
                 "\091\082\101\118\111\108\118\101\114\093\032\032\047\032\032\079\078", "\091\082\101\118\111\108\118\101\114\093\032\032\047\032\032\079\070\070")
         end
-         
+        
         if updateLoops then updateLoops() end
-        if snipeReturn then
+        if returnToOwner and ExtraUI.standOwnerRoot then
             local character = Me.Character
             local root = character and character:FindFirstChild("\072\117\109\097\110\111\105\100\082\111\111\116\080\097\114\116")
             local hum = character and character:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
             if root and hum and hum.Health > 0 and not S.resetInFlight then
+                local ownerRoot = ExtraUI.standOwnerRoot()
+                local destination = ownerRoot
+                    and ownerRoot.CFrame * CFrame.new(2.5, 0, 3.5)
                 local landing = ExtraUI.safeBringLanding
-                    and ExtraUI.safeBringLanding(snipeReturn, character)
+                    and destination
+                    and ExtraUI.safeBringLanding(destination, character)
                 if landing then
                     pcall(function()
                         character:PivotTo(landing)
@@ -3936,15 +4034,15 @@ local function stopAutoKill(message, keepStompPaused)
     if not S.silent and not S.wallBang and not S.forceHit then Hook.enabled = false end
     if message then say(message) end
 end
- 
- 
+
+
 ExtraUI.safeBringLanding = function(destination, character)
     if typeof(destination) ~= "\067\070\114\097\109\101" or destination.Position.Y < -28 then
         return nil, "\100\101\115\116\105\110\097\116\105\111\110\032\105\115\032\098\101\108\111\119\032\116\104\101\032\115\097\102\101\032\109\097\112\032\104\101\105\103\104\116"
     end
     local exclude = {character}
-     
-     
+    
+    
     local params = OverlapParams.new()
     params.FilterType = Enum.RaycastFilterType.Exclude
     params.FilterDescendantsInstances = exclude
@@ -3972,7 +4070,7 @@ ExtraUI.safeBringLanding = function(destination, character)
             end
         end
         if not blocked then
-             
+            
             local floor = Workspace:Raycast(candidate.Position + Vector3.new(0, 1, 0),
                 Vector3.new(0, -12, 0), floorParams)
             if floor and floor.Instance.CanCollide and floor.Normal.Y > 0.5 then
@@ -3999,6 +4097,9 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
     if not ok then say(err); return end
     S.autoKill = true
     S.lastConfirmedHitAt = os.clock()
+    if S.standAmbushTarget == target then
+        S.standAmbushHitAfter = S.lastConfirmedHitAt
+    end
     S.lastAdaptiveSwitchAt = 0
     S.killBringDestination = bringDestination
     S.bringFollowOwner = bringDestination and bringOwner or nil
@@ -4050,6 +4151,7 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                 and (type(realAmmo) ~= "\110\117\109\098\101\114" or realAmmo > 0)
         end
         local snipeAnchor, snipeTargetPosition, nextSnipeMoveAt = nil, nil, 0
+        local drivebyStartedAt, drivebyForward, drivebySide = nil, nil, nil
         local function findSnipePosition(character, root, victim)
             local base = victim.root.Position
             local away = root.Position - base
@@ -4061,7 +4163,9 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
             floorParams.FilterDescendantsInstances = {character, victim.model}
             floorParams.IgnoreWater = true
             for ring = 1, 2 do
-                local radius = ring == 1 and 135 or 105
+                local radius = S.standCounterAttackTarget == target
+                    and (ring == 1 and 75 or 55)
+                    or (ring == 1 and 135 or 105)
                 for step = 0, 7 do
                     local theta = step * math.pi / 4
                     local radial = Vector3.new(
@@ -4123,6 +4227,10 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
             if downed then
                 downedAt = downedAt or os.clock()
                 if S.standDownOnlyTarget == target then
+                    local downReport = S.standChatReport
+                    if downReport and downReport.target == target then
+                        downReport.downConfirmed = true
+                    end
                     stopAutoKill("\083\116\097\110\100\058\032\064" .. target.Name .. "\032\105\115\032\100\111\119\110\059\032\110\111\032\115\116\111\109\112\046")
                     break
                 end
@@ -4147,7 +4255,7 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                     if targetLower and main and not (attacking and attacking.Value) then
                         pcall(function() hum:UnequipTools() end)
                         pcall(function()
-                             
+                            
                             local away = root.Position - targetLower.Position
                             away = Vector3.new(away.X, 0, away.Z)
                             if away.Magnitude < 0.1 then
@@ -4176,7 +4284,7 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                             and S.autoKill and generation == S.autoKillGeneration
                             and Me.Character == character do task.wait(0.04) end
                         if character:FindFirstChild("\071\082\065\066\066\073\078\071\095\067\079\078\083\084\082\065\073\078\084") then
-                             
+                            
                             local latestOwnerRoot = followOwner and ExtraUI.standOwnerRoot()
                             if latestOwnerRoot then destination = latestOwnerRoot.CFrame end
                             local landing, problem = ExtraUI.safeBringLanding(destination, character)
@@ -4203,7 +4311,7 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                                 pcall(function() main:FireServer("\071\114\097\098\098\105\110\103") end)
                                 task.wait(0.2)
                             end
-                             
+                            
                             pcall(function()
                                 root.AssemblyLinearVelocity = Vector3.zero
                                 root.AssemblyAngularVelocity = Vector3.zero
@@ -4257,6 +4365,21 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                 continue
             end
             downedAt = nil
+            if S.standCounterAttackTarget == target
+                and S.standSnipeTarget == target
+                and os.clock() - S.lastConfirmedHitAt > 3.5 then
+                S.standSnipeTarget = nil
+                ExtraUI.standStatus("\067\111\117\110\116\101\114\032\115\110\105\112\101\032\104\097\100\032\110\111\032\099\111\110\102\105\114\109\101\100\032\100\097\109\097\103\101\059\032\109\111\118\105\110\103\032\105\110\032\111\110\032\064"
+                    .. target.Name .. "\046")
+            end
+            if S.standAmbushTarget == target
+                and S.standAmbushRushTarget ~= target
+                and S.standAmbushHitAfter
+                and S.lastConfirmedHitAt > S.standAmbushHitAfter then
+                S.standAmbushRushTarget = target
+                S.standSnipeTarget = nil
+                ExtraUI.standStatus("\065\109\098\117\115\104\032\104\105\116\032\099\111\110\102\105\114\109\101\100\059\032\099\108\111\115\105\110\103\032\111\110\032\064" .. target.Name .. "\046")
+            end
             local tool = character:FindFirstChildOfClass("\084\111\111\108")
             local distance = (rec.root.Position - root.Position).Magnitude
             local bag = Me:FindFirstChildOfClass("\066\097\099\107\112\097\099\107")
@@ -4312,7 +4435,8 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                 angle = angle + (S.standAttack3Target == target and 0.08
                     or S.standAttack5Target == target and 1.2
                     or 0.62 + math.random() * 0.28)
-                local radius = S.standAttack5Target == target and 5.5
+                local radius = S.standAmbushRushTarget == target and 4.5
+                    or S.standAttack5Target == target and 5.5
                     or S.strafeRadius + (math.random() - 0.5) * 1.5
                 local jitter = Vector3.new(math.random() - 0.5,
                     math.random() * 0.8, math.random() - 0.5)
@@ -4321,9 +4445,33 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                     math.sin(angle) * radius) + jitter
                 local attackCFrame = CFrame.lookAt(rec.root.Position + lead + offset,
                     rec.root.Position + lead + Vector3.new(0, 1.5, 0))
+                if S.standDrivebyTarget == target then
+                    if not drivebyStartedAt then
+                        drivebyStartedAt = os.clock()
+                        drivebyForward = root.Position - rec.root.Position
+                        drivebyForward = Vector3.new(drivebyForward.X, 0, drivebyForward.Z)
+                        if drivebyForward.Magnitude < 1 then
+                            drivebyForward = Vector3.new(1, 0, 0)
+                        end
+                        drivebyForward = drivebyForward.Unit
+                        drivebySide = Vector3.new(-drivebyForward.Z, 0, drivebyForward.X)
+                    end
+                    local progress = math.min(1, (os.clock() - drivebyStartedAt) / 1.25)
+                    local passPosition = rec.root.Position + drivebyForward * 15
+                        + drivebySide * ((progress * 2 - 1) * 24)
+                        + Vector3.new(0, 2, 0)
+                    local passFrame = CFrame.lookAt(passPosition,
+                        rec.root.Position + Vector3.new(0, 1.5, 0))
+                    local safePass = ExtraUI.safeBringLanding(passFrame, character)
+                    if safePass then attackCFrame = safePass end
+                    if progress >= 1 then
+                        S.standDrivebyTarget = nil
+                        ExtraUI.standStatus("\068\114\105\118\101\098\121\032\112\097\115\115\032\099\111\109\112\108\101\116\101\059\032\102\105\110\105\115\104\105\110\103\032\064" .. target.Name .. "\046")
+                    end
+                end
                 if S.standAttack3Target == target then
-                     
-                     
+                    
+                    
                     local skyHeight = 80
                     local skyDistance = 120
                     local skyRadius = math.sqrt(skyDistance * skyDistance
@@ -4345,8 +4493,14 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                             snipeAnchor = position
                             snipeTargetPosition = rec.root.Position
                         elseif not snipeAnchor then
-                            stopAutoKill("\083\110\105\112\101\032\115\116\111\112\112\101\100\058\032\110\111\032\115\117\112\112\111\114\116\101\100\032\112\111\115\105\116\105\111\110\032\119\105\116\104\032\097\032\099\108\101\097\114\032\115\104\111\116\046")
-                            break
+                            if S.standCounterAttackTarget == target then
+                                S.standSnipeTarget = nil
+                                ExtraUI.standStatus("\067\111\117\110\116\101\114\058\032\109\111\118\105\110\103\032\105\110\032\116\111\032\100\111\119\110\032\064"
+                                    .. target.Name .. "\059\032\110\111\032\099\108\101\097\114\032\115\110\105\112\101\032\112\111\115\105\116\105\111\110\046")
+                            else
+                                stopAutoKill("\083\110\105\112\101\032\115\116\111\112\112\101\100\058\032\110\111\032\115\117\112\112\111\114\116\101\100\032\112\111\115\105\116\105\111\110\032\119\105\116\104\032\097\032\099\108\101\097\114\032\115\104\111\116\046")
+                                break
+                            end
                         end
                     end
                     if snipeAnchor then
@@ -4373,8 +4527,8 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                     task.wait(rapid and 0.02 or 0.045)
                     continue
                 end
-                 
-                 
+                
+                
                 if readyToFire and S.autoKillVoid and not S.killBringDestination then
                     S.voidBlinking = true
                     pcall(function()
@@ -4421,19 +4575,21 @@ ExtraUI.startAttackOne = function(target, downOnly, variant, independent)
     S.standRevolverRapidBefore = S.rapidWeapons["\091\082\101\118\111\108\118\101\114\093"] == true
     S.standPreviousQuiet = S.quietAutoKill
     S.standPreviousVoid = S.autoKillVoid
-     
-     
+    
+    
     S.standEnabledRapid = not S.rapidWeapons["\091\082\101\118\111\108\118\101\114\093"]
-     
-     
+    
+    
     S.quietAutoKill = variant == "\097\116\116\097\099\107\052"
     S.autoKillVoid = false
     S.rapidWeapons["\091\082\101\118\111\108\118\101\114\093"] = true
     S.standAttackTarget = target
     if independent then
+        local targetRecord = Hook.resolveShotRecord(target)
         S.standChatReport = {
             command = variant or "\097\116\116\097\099\107", target = target,
-            name = target.Name, stompSent = false, sent = false,
+            name = target.Name, targetModel = targetRecord and targetRecord.model,
+            stompSent = false, sent = false,
         }
     end
     S.standDownOnlyTarget = downOnly and target or nil
@@ -4441,9 +4597,14 @@ ExtraUI.startAttackOne = function(target, downOnly, variant, independent)
     S.standAttack3Target = variant == "\097\116\116\097\099\107\051" and not downOnly and target or nil
     S.standAttack4Target = variant == "\097\116\116\097\099\107\052" and not downOnly and target or nil
     S.standAttack5Target = variant == "\097\116\116\097\099\107\053" and not downOnly and target or nil
-    S.standSnipeTarget = variant == "\115\110\105\112\101" and not downOnly and target or nil
-    S.standSnipeReturnCFrame = S.standSnipeTarget
-        and character and character:GetPivot() or nil
+    S.standDrivebyTarget = variant == "\100\114\105\118\101\098\121" and target or nil
+    S.standAmbushTarget = variant == "\097\109\098\117\115\104" and target or nil
+    S.standAmbushRushTarget = nil
+    S.standAmbushHitAfter = nil
+    S.standSnipeTarget = (variant == "\115\110\105\112\101" or variant == "\100\111\119\110"
+        or variant == "\097\109\098\117\115\104" or variant == "\099\111\117\110\116\101\114")
+        and target or nil
+    S.standCounterAttackTarget = variant == "\099\111\117\110\116\101\114" and target or nil
     S.standAttack2FinisherPlayed = false
     S.standAttack2LaunchQueued = false
     style(ExtraUI.QuietKillBtn, S.quietAutoKill,
@@ -4651,8 +4812,8 @@ local function attachJumpBypass(character)
     task.spawn(function()
         local hum = character and character:WaitForChild("\072\117\109\097\110\111\105\100", 5)
         if not hum then return end
-         
-         
+        
+        
         for _ = 1, 40 do
             if S.closed or not S.jumpBypass or generation ~= S.jumpBypassGeneration
                 or Me.Character ~= character then return end
@@ -4679,10 +4840,10 @@ local function attachJumpBypass(character)
             end
             if flags then
                 flags.NoJumping = false
-                 
-                 
-                 
-                 
+                
+                
+                
+                
                 ExtraUI.jumpBypassInputConnection = UIS.JumpRequest:Connect(function()
                     if S.closed or not S.jumpBypass
                         or generation ~= S.jumpBypassGeneration
@@ -4936,7 +5097,7 @@ ExtraUI.standLaunchTarget = function(target)
                 targetRoot.AssemblyMass * 350, 0))
         end)
     else
-         
+        
         task.spawn(function()
             for _ = 1, 18 do
                 if S.closed or not model.Parent then return end
@@ -4957,6 +5118,8 @@ ExtraUI.stopAura = function(message)
     if not S.aura then return end
     S.aura = false
     S.auraFromStand = false
+    S.auraProtectedPlayer = nil
+    S.auraProtectMissingAt = nil
     S.auraGeneration = S.auraGeneration + 1
     Hook.auraTarget, Hook.auraRecord = nil, nil
     style(ExtraUI.AuraBtn, false, "\065\085\082\065\032\055\053\032\083\084\085\068\083\058\032\079\078", "\065\085\082\065\032\055\053\032\083\084\085\068\083\058\032\079\070\070")
@@ -4980,9 +5143,13 @@ ExtraUI.stopAura = function(message)
     end
     if message then say(message) end
 end
-ExtraUI.startAura = function(fromStand)
+ExtraUI.startAura = function(fromStand, protectTarget)
     if S.aura then
-        if fromStand then S.auraFromStand = true end
+        if fromStand then
+            S.auraFromStand = true
+            S.auraProtectedPlayer = protectTarget
+            S.auraProtectMissingAt = nil
+        end
         return true
     end
     local ok, reason = installRaycastHook()
@@ -4990,6 +5157,8 @@ ExtraUI.startAura = function(fromStand)
     if S.autoKill then stopAutoKill() end
     S.aura = true
     S.auraFromStand = fromStand == true
+    S.auraProtectedPlayer = protectTarget
+    S.auraProtectMissingAt = nil
     table.clear(S.auraThreatUntil)
     table.clear(S.auraRecentFiring)
     table.clear(S.auraBlockedUntil)
@@ -5017,22 +5186,37 @@ ExtraUI.startAura = function(fromStand)
             local now = os.clock()
             local character = Me.Character
             local root = character and character:FindFirstChild("\072\117\109\097\110\111\105\100\082\111\111\116\080\097\114\116")
-            local centerRoot = if S.auraFromStand
-                then ExtraUI.standOwnerRoot() else root
+            local centerRoot = if S.auraProtectedPlayer
+                then ExtraUI.standTargetRoot(S.auraProtectedPlayer)
+                else if S.auraFromStand then ExtraUI.standOwnerRoot() else root
+            if S.auraProtectedPlayer and not centerRoot then
+                S.auraProtectMissingAt = S.auraProtectMissingAt or now
+                if S.auraProtectedPlayer.Parent ~= Players
+                    or now - S.auraProtectMissingAt > 6 then
+                    ExtraUI.stopAura("\080\114\111\116\101\099\116\032\115\116\111\112\112\101\100\058\032\112\108\097\121\101\114\032\117\110\097\118\097\105\108\097\098\108\101\046")
+                    break
+                end
+            else
+                S.auraProtectMissingAt = nil
+            end
             local hum = character and character:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
             local bag = Me:FindFirstChildOfClass("\066\097\099\107\112\097\099\107")
             local effects = character and character:FindFirstChild("\066\111\100\121\069\102\102\101\099\116\115")
             local ko = effects and effects:FindFirstChild("\075\046\079")
             local reload = effects and effects:FindFirstChild("\082\101\108\111\097\100")
             local armorValue = effects and effects:FindFirstChild("\065\114\109\111\114")
-            local ownHealth = hum and hum.Health or nil
-            local ownArmor = armorValue and armorValue.Value or nil
-            local tookDamage = S.auraLastCharacter == character
+            local watchedCharacter = centerRoot and centerRoot.Parent or character
+            local watchedHum = watchedCharacter and watchedCharacter:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
+            local watchedEffects = watchedCharacter and watchedCharacter:FindFirstChild("\066\111\100\121\069\102\102\101\099\116\115")
+            local watchedArmorValue = watchedEffects and watchedEffects:FindFirstChild("\065\114\109\111\114")
+            local ownHealth = watchedHum and watchedHum.Health or nil
+            local ownArmor = watchedArmorValue and watchedArmorValue.Value or nil
+            local tookDamage = S.auraLastCharacter == watchedCharacter
                 and ((ownHealth and S.auraLastHealth
                     and ownHealth < S.auraLastHealth)
                     or (ownArmor and S.auraLastArmor
                     and ownArmor < S.auraLastArmor))
-            S.auraLastCharacter = character
+            S.auraLastCharacter = watchedCharacter
             S.auraLastHealth, S.auraLastArmor = ownHealth, ownArmor
             if centerRoot and root and hum and hum.Health > 0 and bag
                 and not (ko and ko.Value) and not (reload and reload.Value) then
@@ -5051,7 +5235,8 @@ ExtraUI.startAura = function(fromStand)
                 end
                 local eligible = {}
                 for _, player in ipairs(Players:GetPlayers()) do
-                    if player ~= Me and (not S.auraFromStand or player ~= S.standOwner) then
+                    if player ~= Me and (not S.auraFromStand or player ~= S.standOwner)
+                        and player ~= S.auraProtectedPlayer then
                         local rec = Records[player]
                         if not recordUsable(player, rec) then
                             rec = Hook.resolveShotRecord(player)
@@ -5062,7 +5247,7 @@ ExtraUI.startAura = function(fromStand)
                             local firing = targetEffects and targetEffects:FindFirstChild("\071\117\110\070\105\114\105\110\103")
                             local firingNow = firing and firing.Value == true
                             if firingNow then S.auraRecentFiring[player] = os.clock() end
-                            local toward = root.Position - rec.root.Position
+                            local toward = centerRoot.Position - rec.root.Position
                             local facing = toward.Magnitude > 0.1
                                 and rec.root.CFrame.LookVector:Dot(toward.Unit) > 0.35
                             if firingNow and facing then
@@ -5197,6 +5382,14 @@ ExtraUI.stopFloatingFollow = function()
 end
 ExtraUI.standStop = function(message)
     ExtraUI.stopAura()
+    S.standCounterTarget = nil
+    S.standCounterPending = nil
+    table.clear(S.standCounterShots)
+    table.clear(S.standCounterHandled)
+    table.clear(S.standCounterReportedDown)
+    S.standSavedOrder = nil
+    Env.SpectraStandSavedOrder = nil
+    Env.SpectraStandCounterPendingUserId = nil
     ExtraUI.stopFloatingFollow()
     ExtraUI.standEndCinematic()
     ExtraUI.standCancelFling()
@@ -5205,7 +5398,26 @@ ExtraUI.standStop = function(message)
     S.standFollowGeneration = S.standFollowGeneration + 1
     S.standOrderGeneration = S.standOrderGeneration + 1
     if S.autoKill then stopAutoKill() end
+    if ExtraUI.applyGunMods then ExtraUI.applyGunMods(Me.Character) end
     if message then ExtraUI.standStatus(message) end
+end
+ExtraUI.standObserveShot = function(shot)
+    if not S.standCounterTarget or type(shot) ~= "\116\097\098\108\101" then return end
+    local shooter = shot.Player
+    if typeof(shooter) == "\073\110\115\116\097\110\099\101" and shooter:IsA("\080\108\097\121\101\114")
+        and shooter.Parent == Players and shooter ~= Me
+        and shooter ~= S.standOwner then
+        S.standCounterShots[shooter] = os.clock()
+    end
+end
+ExtraUI.standRememberOrder = function(sender, command, argument)
+    local order = {
+        ownerUserId = sender.UserId,
+        command = command,
+        argument = argument or "",
+    }
+    S.standSavedOrder = order
+    Env.SpectraStandSavedOrder = order
 end
 ExtraUI.standStartFling = function(target)
     ExtraUI.standStop()
@@ -5363,7 +5575,7 @@ ExtraUI.standSetOwner = function(owner)
         if ExtraUI.standHandleChat then ExtraUI.standHandleChat(owner, message) end
     end)
     ExtraUI.standStatus(owner == Me
-        and "\083\101\108\102\032\111\119\110\101\114\032\115\101\116\046\032\069\110\097\098\108\101\032\076\105\115\116\101\110\032\102\111\114\032\033\097\116\116\097\099\107\044\032\033\097\116\116\097\099\107\050\045\053\044\032\033\115\110\105\112\101\044\032\033\097\117\114\097\044\032\033\103\111\116\111\044\032\033\115\116\111\112\046"
+        and "\083\101\108\102\032\111\119\110\101\114\032\115\101\116\046\032\069\110\097\098\108\101\032\076\105\115\116\101\110\032\102\111\114\032\033\097\116\116\097\099\107\044\032\033\097\116\116\097\099\107\050\045\053\044\032\033\115\110\105\112\101\044\032\033\100\111\119\110\044\032\033\097\117\114\097\044\032\033\103\111\116\111\044\032\033\115\116\111\112\046"
         or ("\079\119\110\101\114\032\115\101\116\032\116\111\032\064" .. owner.Name .. "\046\032\069\110\097\098\108\101\032\076\105\115\116\101\110\046"))
 end
 ExtraUI.standHandleChat = function(sender, message)
@@ -5379,10 +5591,13 @@ ExtraUI.standHandleChat = function(sender, message)
     if sender == Me and command ~= "\097\116\116\097\099\107" and command ~= "\097\116\116\097\099\107\050"
         and command ~= "\097\116\116\097\099\107\051" and command ~= "\097\116\116\097\099\107\052"
         and command ~= "\097\116\116\097\099\107\053" and command ~= "\115\110\105\112\101"
+        and command ~= "\100\111\119\110"
         and command ~= "\097\117\114\097"
+        and command ~= "\112\114\111\116\101\099\116" and command ~= "\099\111\117\110\116\101\114"
+        and command ~= "\100\114\105\118\101\098\121" and command ~= "\097\109\098\117\115\104"
         and command ~= "\103\111\116\111"
         and command ~= "\115\116\111\112" then
-        ExtraUI.standStatus("\083\101\108\102\032\111\119\110\101\114\058\032\033\097\116\116\097\099\107\044\032\033\097\116\116\097\099\107\050\045\053\044\032\033\115\110\105\112\101\044\032\033\097\117\114\097\044\032\033\103\111\116\111\044\032\033\115\116\111\112\032\111\110\108\121\046")
+        ExtraUI.standStatus("\083\101\108\102\032\111\119\110\101\114\058\032\097\116\116\097\099\107\044\032\115\110\105\112\101\044\032\100\111\119\110\044\032\097\117\114\097\044\032\112\114\111\116\101\099\116\044\032\099\111\117\110\116\101\114\044\032\100\114\105\118\101\098\121\044\032\097\109\098\117\115\104\044\032\103\111\116\111\044\032\115\116\111\112\046")
         return
     end
     if command == "\115\116\111\112" then
@@ -5392,13 +5607,438 @@ ExtraUI.standHandleChat = function(sender, message)
         local ok, reason = ExtraUI.startAura(true)
         ExtraUI.standStatus(ok and "\065\117\114\097\032\097\099\116\105\118\101\058\032\100\111\119\110\105\110\103\032\112\108\097\121\101\114\115\032\119\105\116\104\105\110\032\055\053\032\115\116\117\100\115\059\032\110\111\032\115\116\111\109\112\046"
             or tostring(reason))
+    elseif command == "\112\114\111\116\101\099\116" then
+        local target, issue = ExtraUI.standResolveTarget(sender, argument)
+        if not target then ExtraUI.standStatus(issue); return end
+        if target == Me then
+            ExtraUI.standStatus("\085\115\101\032\033\097\117\114\097\032\116\111\032\103\117\097\114\100\032\121\111\117\114\115\101\108\102\046")
+            return
+        end
+        ExtraUI.standStop()
+        local ok, reason = ExtraUI.startAura(true, target)
+        ExtraUI.standStatus(ok and ("\080\114\111\116\101\099\116\105\110\103\032\064" .. target.Name .. "\032\119\105\116\104\105\110\032\055\053\032\115\116\117\100\115\046")
+            or tostring(reason))
+    elseif command == "\099\111\117\110\116\101\114" then
+        if string.lower((argument or ""):match("\094\037\115\042\040\046\045\041\037\115\042\036")) == "\109\101" then
+            ExtraUI.standStop()
+            S.standCounterTarget = sender
+            ExtraUI.applyGunMods(Me.Character)
+            local generation = S.standOrderGeneration
+            ExtraUI.standStatus("\067\111\117\110\116\101\114\032\103\117\097\114\100\032\097\114\109\101\100\032\102\111\114\032\064" .. sender.Name .. "\046")
+            task.spawn(function()
+                local recentFiring = {}
+                local firingState = {}
+                local lastShotStamp = {}
+                local vitalSamples = {}
+                local watchedModel, watchedHumObject, watchedArmorObject = nil, nil, nil
+                local lastHealth, lastArmor = nil, nil
+                local damageAt = 0
+                local lastDamageReportedAt = 0
+                local lastOwnerMissingNoticeAt = 0
+                local lastBulletHookAttemptAt = 0
+                local watchConnections = {}
+                while S.standEnabled and generation == S.standOrderGeneration
+                    and S.standCounterTarget == sender do
+                    if sender.Parent ~= Players then
+                        S.standCounterTarget = nil
+                        ExtraUI.standStatus("\067\111\117\110\116\101\114\032\103\117\097\114\100\032\115\116\111\112\112\101\100\058\032\111\119\110\101\114\032\108\101\102\116\046")
+                        break
+                    end
+                    if not S.standCounterBulletHooked
+                        and os.clock() - lastBulletHookAttemptAt > 1 then
+                        lastBulletHookAttemptAt = os.clock()
+                        ExtraUI.applyGunMods(Me.Character)
+                    end
+                    if not S.autoKill then
+                        local ownerRoot = ExtraUI.standOwnerRoot()
+                            or ExtraUI.standTargetRoot(sender)
+                        local attacker = nil
+                        if ownerRoot then
+                            local ownerModel = ownerRoot.Parent
+                            local possibleModels = {ownerModel}
+                            if sender.Character and sender.Character ~= ownerModel then
+                                possibleModels[#possibleModels + 1] = sender.Character
+                            end
+                            local ownerRecord = Records[sender]
+                                or Hook.resolveShotRecord(sender)
+                            if ownerRecord and ownerRecord.model
+                                and ownerRecord.model ~= ownerModel
+                                and ownerRecord.model ~= sender.Character then
+                                possibleModels[#possibleModels + 1] = ownerRecord.model
+                            end
+                            for _, model in ipairs(possibleModels) do
+                                local sampleHum = model:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
+                                local sampleEffects = model:FindFirstChild("\066\111\100\121\069\102\102\101\099\116\115")
+                                local sampleArmor = sampleEffects and sampleEffects:FindFirstChild("\065\114\109\111\114")
+                                if sampleHum then
+                                    local previous = vitalSamples[sampleHum]
+                                    if previous and sampleHum.Health < previous then
+                                        damageAt = os.clock()
+                                    end
+                                    vitalSamples[sampleHum] = sampleHum.Health
+                                end
+                                if sampleArmor and sampleArmor:IsA("\086\097\108\117\101\066\097\115\101")
+                                    and type(sampleArmor.Value) == "\110\117\109\098\101\114" then
+                                    local previous = vitalSamples[sampleArmor]
+                                    if previous and sampleArmor.Value < previous then
+                                        damageAt = os.clock()
+                                    end
+                                    vitalSamples[sampleArmor] = sampleArmor.Value
+                                end
+                            end
+                            local ownerHum = ownerModel:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
+                            local ownerEffects = ownerModel:FindFirstChild("\066\111\100\121\069\102\102\101\099\116\115")
+                            local ownerArmor = ownerEffects and ownerEffects:FindFirstChild("\065\114\109\111\114")
+                            local healthNow = ownerHum and ownerHum.Health
+                            local armorNow = ownerArmor and ownerArmor.Value
+                            if ownerModel ~= watchedModel
+                                or ownerHum ~= watchedHumObject
+                                or ownerArmor ~= watchedArmorObject then
+                                for _, connection in ipairs(watchConnections) do
+                                    connection:Disconnect()
+                                end
+                                table.clear(watchConnections)
+                                watchedModel, watchedHumObject, watchedArmorObject =
+                                    ownerModel, ownerHum, ownerArmor
+                                lastHealth, lastArmor = healthNow, armorNow
+                                if ownerHum then
+                                    watchConnections[#watchConnections + 1] = ownerHum.HealthChanged:Connect(function(value)
+                                        if lastHealth and value < lastHealth then damageAt = os.clock() end
+                                        lastHealth = value
+                                    end)
+                                end
+                                if ownerArmor and ownerArmor:IsA("\086\097\108\117\101\066\097\115\101") then
+                                    watchConnections[#watchConnections + 1] = ownerArmor.Changed:Connect(function(value)
+                                        if type(value) == "\110\117\109\098\101\114" then
+                                            if lastArmor and value < lastArmor then damageAt = os.clock() end
+                                            lastArmor = value
+                                        end
+                                    end)
+                                end
+                            end
+                            if (healthNow and lastHealth and healthNow < lastHealth)
+                                or (armorNow and lastArmor and armorNow < lastArmor) then
+                                damageAt = os.clock()
+                            end
+                            lastHealth, lastArmor = healthNow, armorNow
+                            local damaged = os.clock() - damageAt < 0.35
+                            local recentShooter, recentCount = nil, 0
+                            local loneArmed, armedCount = nil, 0
+                            for _, player in ipairs(Players:GetPlayers()) do
+                                if player ~= Me and player ~= sender then
+                                    local shooterRoot = ExtraUI.standTargetRoot(player)
+                                    if shooterRoot then
+                                        local effects = shooterRoot.Parent:FindFirstChild("\066\111\100\121\069\102\102\101\099\116\115")
+                                        local firing = effects and effects:FindFirstChild("\071\117\110\070\105\114\105\110\103")
+                                        local firingNow = firing and firing.Value == true or false
+                                        local toward = ownerRoot.Position - shooterRoot.Position
+                                        local distance = toward.Magnitude
+                                        local facingOwner = distance > 0.1
+                                            and shooterRoot.CFrame.LookVector:Dot(toward.Unit) > 0.15
+                                        local equipped = shooterRoot.Parent:FindFirstChildOfClass("\084\111\111\108")
+                                        if firingNow and not firingState[player] then
+                                            recentFiring[player] = os.clock()
+                                        end
+                                        firingState[player] = firingNow
+                                        local shotStamp = equipped
+                                            and equipped:GetAttribute("\083\104\111\116\067\111\111\108\100\111\119\110\083\116\097\114\116\101\100")
+                                        if type(shotStamp) == "\110\117\109\098\101\114" then
+                                            if lastShotStamp[player] and shotStamp > lastShotStamp[player] then
+                                                recentFiring[player] = os.clock()
+                                            end
+                                            lastShotStamp[player] = shotStamp
+                                        end
+                                        if damaged and distance <= 350 then
+                                            if equipped and distance <= 250 and facingOwner then
+                                                loneArmed = player
+                                                armedCount = armedCount + 1
+                                            end
+                                            local firedAt = recentFiring[player] or 0
+                                            if os.clock() - firedAt <= 1.25 then
+                                                recentShooter = player
+                                                recentCount = recentCount + 1
+                                            end
+                                        end
+                                    else
+                                        firingState[player] = false
+                                    end
+                                end
+                            end
+                            if damaged then
+                                local taggedPlayer = nil
+                                local bulletShooter, bulletCount = nil, 0
+                                for player, firedAt in pairs(S.standCounterShots) do
+                                    if player.Parent == Players
+                                        and os.clock() - firedAt <= 2 then
+                                        bulletShooter = player
+                                        bulletCount = bulletCount + 1
+                                    end
+                                end
+                                for _, model in ipairs(possibleModels) do
+                                    local modelHum = model:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
+                                    local modelEffects = model:FindFirstChild("\066\111\100\121\069\102\102\101\099\116\115")
+                                    local tag = modelHum and modelHum:FindFirstChild("\099\114\101\097\116\111\114")
+                                        or model:FindFirstChild("\099\114\101\097\116\111\114")
+                                        or modelEffects and modelEffects:FindFirstChild("\099\114\101\097\116\111\114")
+                                    local value = tag and tag:IsA("\079\098\106\101\099\116\086\097\108\117\101") and tag.Value
+                                    if value and value:IsA("\080\108\097\121\101\114") then
+                                        taggedPlayer = value
+                                        break
+                                    elseif value and value:IsA("\077\111\100\101\108") then
+                                        taggedPlayer = Players:GetPlayerFromCharacter(value)
+                                        if taggedPlayer then break end
+                                    end
+                                end
+                                if taggedPlayer and taggedPlayer:IsA("\080\108\097\121\101\114")
+                                    and taggedPlayer ~= Me and taggedPlayer ~= sender then
+                                    attacker = taggedPlayer
+                                elseif bulletCount == 1 then
+                                    attacker = bulletShooter
+                                else
+                                    attacker = bulletCount == 0 and recentCount == 1
+                                        and recentShooter
+                                        or bulletCount == 0 and recentCount == 0
+                                            and armedCount == 1 and loneArmed or nil
+                                end
+                                if damageAt > lastDamageReportedAt then
+                                    lastDamageReportedAt = damageAt
+                                    ExtraUI.standStatus(attacker
+                                        and ("\079\119\110\101\114\032\104\105\116\032\100\101\116\101\099\116\101\100\059\032\099\111\117\110\116\101\114\032\116\097\114\103\101\116\032\064"
+                                            .. attacker.Name .. "\046")
+                                        or "\079\119\110\101\114\032\104\105\116\032\100\101\116\101\099\116\101\100\059\032\115\104\111\111\116\101\114\032\097\109\098\105\103\117\111\117\115\044\032\104\111\108\100\105\110\103\032\102\105\114\101\046")
+                                end
+                            end
+                        else
+                            watchedModel, watchedHumObject, watchedArmorObject = nil, nil, nil
+                            lastHealth, lastArmor = nil, nil
+                            if os.clock() - lastOwnerMissingNoticeAt > 4 then
+                                lastOwnerMissingNoticeAt = os.clock()
+                                ExtraUI.standStatus("\067\111\117\110\116\101\114\032\119\097\105\116\105\110\103\032\102\111\114\032\111\119\110\101\114\039\115\032\099\104\097\114\097\099\116\101\114\046")
+                            end
+                        end
+                        if attacker then
+                            local attackRecord = Hook.resolveShotRecord(attacker)
+                            if not attackRecord then
+                                attacker = nil
+                            elseif not alive(attackRecord, true) then
+                                S.standCounterHandled[attacker] = attackRecord.model
+                                attacker = nil
+                            elseif S.standCounterHandled[attacker] == attackRecord.model then
+                                attacker = nil
+                            else
+                                S.standCounterHandled[attacker] = nil
+                            end
+                        end
+                        if attacker then
+                            damageAt = 0
+                            if not S.standCounterPending then
+                                S.standCounterPending = attacker
+                                Env.SpectraStandCounterPendingUserId = attacker.UserId
+                                ExtraUI.standStatus("\067\111\117\110\116\101\114\032\113\117\101\117\101\100\032\102\111\114\032\064" .. attacker.Name
+                                    .. "\032\097\102\116\101\114\032\064" .. sender.Name .. "\032\116\111\111\107\032\100\097\109\097\103\101\046")
+                            end
+                        end
+                        local pending = S.standCounterPending
+                        if pending and pending.Parent ~= Players then
+                            S.standCounterPending = nil
+                            Env.SpectraStandCounterPendingUserId = nil
+                        elseif pending then
+                            local pendingRecord = Hook.resolveShotRecord(pending)
+                            if not pendingRecord then
+                                task.wait(0.1)
+                                continue
+                            end
+                            if pendingRecord and not alive(pendingRecord, true) then
+                                S.standCounterHandled[pending] = pendingRecord.model
+                                S.standCounterPending = nil
+                                Env.SpectraStandCounterPendingUserId = nil
+                                ExtraUI.standStatus("\067\111\117\110\116\101\114\032\116\097\114\103\101\116\032\064" .. pending.Name
+                                    .. "\032\105\115\032\097\108\114\101\097\100\121\032\100\111\119\110\059\032\103\117\097\114\100\032\114\101\109\097\105\110\115\032\097\114\109\101\100\046")
+                                task.wait(0.05)
+                                continue
+                            end
+                            if pendingRecord
+                                and S.standCounterHandled[pending] == pendingRecord.model then
+                                S.standCounterPending = nil
+                                Env.SpectraStandCounterPendingUserId = nil
+                                task.wait(0.05)
+                                continue
+                            end
+                            local ownCharacter = Me.Character
+                            local ownHum = ownCharacter and ownCharacter:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
+                            local ownRoot = ownCharacter and ownCharacter:FindFirstChild("\072\117\109\097\110\111\105\100\082\111\111\116\080\097\114\116")
+                            local bag = Me:FindFirstChildOfClass("\066\097\099\107\112\097\099\107")
+                            local revolver = ownCharacter and ownCharacter:FindFirstChild("\091\082\101\118\111\108\118\101\114\093")
+                                or bag and bag:FindFirstChild("\091\082\101\118\111\108\118\101\114\093")
+                            if ownHum and ownRoot and ownHum.Health > 0 and revolver then
+                                local started, reason = ExtraUI.startAttackOne(
+                                    pending, true, "\099\111\117\110\116\101\114", true)
+                                if started then
+                                    S.standCounterPending = nil
+                                    Env.SpectraStandCounterPendingUserId = nil
+                                    ExtraUI.standStatus("\067\111\117\110\116\101\114\032\115\110\105\112\105\110\103\032\064" .. pending.Name .. "\046")
+                                elseif reason == "\084\097\114\103\101\116\032\117\110\097\118\097\105\108\097\098\108\101\046" then
+                                    S.standCounterPending = nil
+                                    Env.SpectraStandCounterPendingUserId = nil
+                                elseif reason ~= "\082\101\118\111\108\118\101\114\032\105\115\032\110\111\116\032\105\110\032\121\111\117\114\032\105\110\118\101\110\116\111\114\121\046" then
+                                    ExtraUI.standStatus("\067\111\117\110\116\101\114\032\114\101\116\114\121\058\032" .. tostring(reason))
+                                    task.wait(0.5)
+                                end
+                            end
+                        end
+                    end
+                    task.wait(0.05)
+                end
+                for _, connection in ipairs(watchConnections) do
+                    connection:Disconnect()
+                end
+            end)
+            ExtraUI.standRememberOrder(sender, command, argument)
+            return
+        end
+        local target, issue = ExtraUI.standResolveTarget(sender, argument)
+        if not target then ExtraUI.standStatus(issue); return end
+        if target == Me or target == S.standOwner then
+            ExtraUI.standStatus("\067\104\111\111\115\101\032\097\110\111\116\104\101\114\032\112\108\097\121\101\114\032\116\111\032\099\111\117\110\116\101\114\046")
+            return
+        end
+        ExtraUI.standStop()
+        S.standCounterTarget = target
+        ExtraUI.applyGunMods(Me.Character)
+        local generation = S.standOrderGeneration
+        ExtraUI.standStatus("\067\111\117\110\116\101\114\032\097\114\109\101\100\032\102\111\114\032\064" .. target.Name .. "\046")
+        task.spawn(function()
+            local lastHealth, lastArmor, watchedModel = nil, nil, nil
+            local watchedHumObject, watchedArmorObject = nil, nil
+            local lastThreatAt = 0
+            local damageAt = 0
+            local watchConnections = {}
+            while S.standEnabled and generation == S.standOrderGeneration
+                and S.standCounterTarget == target do
+                if S.standCounterPending == target then break end
+                if target.Parent ~= Players then
+                    S.standCounterTarget = nil
+                    ExtraUI.standStatus("\067\111\117\110\116\101\114\032\099\097\110\099\101\108\108\101\100\058\032\116\097\114\103\101\116\032\108\101\102\116\046")
+                    break
+                end
+                local ownerRoot = ExtraUI.standOwnerRoot()
+                local targetRoot = ExtraUI.standTargetRoot(target)
+                local ownerModel = ownerRoot and ownerRoot.Parent
+                local ownerHum = ownerModel and ownerModel:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
+                local ownerEffects = ownerModel and ownerModel:FindFirstChild("\066\111\100\121\069\102\102\101\099\116\115")
+                local armor = ownerEffects and ownerEffects:FindFirstChild("\065\114\109\111\114")
+                local healthNow = ownerHum and ownerHum.Health
+                local armorNow = armor and armor.Value
+                if ownerModel ~= watchedModel
+                    or ownerHum ~= watchedHumObject or armor ~= watchedArmorObject then
+                    for _, connection in ipairs(watchConnections) do
+                        connection:Disconnect()
+                    end
+                    table.clear(watchConnections)
+                    watchedModel, watchedHumObject, watchedArmorObject =
+                        ownerModel, ownerHum, armor
+                    lastHealth, lastArmor = healthNow, armorNow
+                    if ownerHum then
+                        watchConnections[#watchConnections + 1] = ownerHum.HealthChanged:Connect(function(value)
+                            if lastHealth and value < lastHealth then damageAt = os.clock() end
+                            lastHealth = value
+                        end)
+                    end
+                    if armor and armor:IsA("\086\097\108\117\101\066\097\115\101") then
+                        watchConnections[#watchConnections + 1] = armor.Changed:Connect(function(value)
+                            if type(value) == "\110\117\109\098\101\114" then
+                                if lastArmor and value < lastArmor then damageAt = os.clock() end
+                                lastArmor = value
+                            end
+                        end)
+                    end
+                end
+                local firedToward = false
+                if ownerRoot and targetRoot then
+                    local effects = targetRoot.Parent:FindFirstChild("\066\111\100\121\069\102\102\101\099\116\115")
+                    local gunFiring = effects and effects:FindFirstChild("\071\117\110\070\105\114\105\110\103")
+                    local toward = ownerRoot.Position - targetRoot.Position
+                    firedToward = gunFiring and gunFiring.Value == true
+                        and toward.Magnitude > 0.1 and toward.Magnitude <= 175
+                        and targetRoot.CFrame.LookVector:Dot(toward.Unit) > 0.35
+                end
+                if firedToward then lastThreatAt = os.clock() end
+                if (healthNow and lastHealth and healthNow < lastHealth)
+                    or (armorNow and lastArmor and armorNow < lastArmor) then
+                    damageAt = os.clock()
+                end
+                lastHealth, lastArmor = healthNow, armorNow
+                local armed = targetRoot and targetRoot.Parent:FindFirstChildOfClass("\084\111\111\108")
+                local closeEnough = ownerRoot and targetRoot
+                    and (ownerRoot.Position - targetRoot.Position).Magnitude <= 350
+                if os.clock() - damageAt < 0.35
+                    and (firedToward or os.clock() - lastThreatAt < 2
+                        or (armed and closeEnough)) then
+                    S.standCounterPending = target
+                    Env.SpectraStandCounterPendingUserId = target.UserId
+                    ExtraUI.standStatus("\067\111\117\110\116\101\114\032\113\117\101\117\101\100\032\102\111\114\032\064" .. target.Name .. "\046")
+                    break
+                end
+                task.wait(0.05)
+            end
+            for _, connection in ipairs(watchConnections) do
+                connection:Disconnect()
+            end
+            while S.standEnabled and generation == S.standOrderGeneration
+                and S.standCounterTarget == target
+                and S.standCounterPending == target do
+                if target.Parent ~= Players then
+                    S.standCounterTarget = nil
+                    S.standCounterPending = nil
+                    Env.SpectraStandCounterPendingUserId = nil
+                    break
+                end
+                local targetRecord = Hook.resolveShotRecord(target)
+                if not targetRecord then
+                    task.wait(0.2)
+                    continue
+                end
+                if targetRecord and not alive(targetRecord, true) then
+                    S.standCounterHandled[target] = targetRecord.model
+                    S.standCounterTarget = nil
+                    S.standCounterPending = nil
+                    Env.SpectraStandCounterPendingUserId = nil
+                    ExtraUI.standStatus("\067\111\117\110\116\101\114\032\116\097\114\103\101\116\032\097\108\114\101\097\100\121\032\100\111\119\110\059\032\111\114\100\101\114\032\102\105\110\105\115\104\101\100\046")
+                    break
+                end
+                local ownCharacter = Me.Character
+                local ownHum = ownCharacter and ownCharacter:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
+                local ownRoot = ownCharacter and ownCharacter:FindFirstChild("\072\117\109\097\110\111\105\100\082\111\111\116\080\097\114\116")
+                local bag = Me:FindFirstChildOfClass("\066\097\099\107\112\097\099\107")
+                local revolver = ownCharacter and ownCharacter:FindFirstChild("\091\082\101\118\111\108\118\101\114\093")
+                    or bag and bag:FindFirstChild("\091\082\101\118\111\108\118\101\114\093")
+                if ownHum and ownRoot and ownHum.Health > 0 and revolver then
+                    local started, reason = ExtraUI.startAttackOne(target, true, "\099\111\117\110\116\101\114", true)
+                    if started then
+                        S.standCounterTarget = nil
+                        S.standCounterPending = nil
+                        Env.SpectraStandCounterPendingUserId = nil
+                        ExtraUI.standStatus("\067\111\117\110\116\101\114\032\115\110\105\112\105\110\103\032\064" .. target.Name .. "\046")
+                        break
+                    elseif reason == "\084\097\114\103\101\116\032\117\110\097\118\097\105\108\097\098\108\101\046" then
+                        S.standCounterTarget = nil
+                        S.standCounterPending = nil
+                        Env.SpectraStandCounterPendingUserId = nil
+                        break
+                    elseif reason ~= "\082\101\118\111\108\118\101\114\032\105\115\032\110\111\116\032\105\110\032\121\111\117\114\032\105\110\118\101\110\116\111\114\121\046" then
+                        ExtraUI.standStatus("\067\111\117\110\116\101\114\032\114\101\116\114\121\058\032" .. tostring(reason))
+                    end
+                end
+                task.wait(0.2)
+            end
+        end)
     elseif command == "\104\101\108\112" then
         local topic = string.lower(argument or "")
         ExtraUI.standStatus(topic == "\097\116\116\097\099\107"
-            and "\033\097\116\116\097\099\107\044\032\033\097\116\116\097\099\107\050\045\053\044\032\033\097\117\114\097\044\032\033\115\116\111\112\059\032\033\115\110\105\112\101\044\032\033\098\114\105\110\103\044\032\033\102\108\105\110\103\032\060\110\097\109\101\062\046"
+            and "\033\097\116\116\097\099\107\044\032\033\097\116\116\097\099\107\050\045\053\044\032\033\115\110\105\112\101\044\032\033\100\111\119\110\044\032\033\100\114\105\118\101\098\121\044\032\033\097\109\098\117\115\104\044\032\033\099\111\117\110\116\101\114\044\032\033\112\114\111\116\101\099\116\044\032\033\115\116\111\112\046"
             or topic == "\103\101\097\114"
             and "\033\101\113\117\105\112\032\060\119\101\097\112\111\110\062\044\032\033\117\110\101\113\117\105\112\044\032\033\114\101\108\111\097\100\044\032\033\097\102\107\032\111\110\047\111\102\102\046"
-            or "\033\103\111\116\111\044\032\033\098\097\099\107\044\032\033\102\097\099\101\044\032\033\102\111\108\108\111\119\044\032\033\104\111\108\100\044\032\033\114\101\108\101\097\115\101\059\032\033\104\101\108\112\032\097\116\116\097\099\107\047\103\101\097\114\046")
+            or "\033\097\117\114\097\044\032\033\098\114\105\110\103\044\032\033\102\108\105\110\103\059\032\033\103\111\116\111\044\032\033\098\097\099\107\044\032\033\102\097\099\101\044\032\033\102\111\108\108\111\119\059\032\033\104\101\108\112\032\097\116\116\097\099\107\047\103\101\097\114\046")
     elseif command == "\097\102\107" then
         local option = string.lower((argument or ""):match("\094\037\115\042\040\046\045\041\037\115\042\036"))
         if option == "\111\110" or option == "\111\102\102" then
@@ -5546,6 +6186,8 @@ ExtraUI.standHandleChat = function(sender, message)
         ExtraUI.standStatus("\072\111\108\100\105\110\103\032\112\111\115\105\116\105\111\110\059\032\033\114\101\108\101\097\115\101\032\111\114\032\033\115\116\111\112\032\116\111\032\109\111\118\101\046")
     elseif command == "\114\101\108\101\097\115\101" then
         ExtraUI.standReleaseHold()
+        S.standSavedOrder = nil
+        Env.SpectraStandSavedOrder = nil
         ExtraUI.standStatus("\080\111\115\105\116\105\111\110\032\114\101\108\101\097\115\101\100\046")
     elseif command == "\101\113\117\105\112" then
         local query = string.lower((argument or ""):match("\094\037\115\042\040\046\045\041\037\115\042\036"))
@@ -5671,7 +6313,9 @@ ExtraUI.standHandleChat = function(sender, message)
                 or ("\066\114\105\110\103\032\099\111\117\108\100\032\110\111\116\032\115\116\097\114\116\058\032" .. tostring(err)))
         end)
     elseif command == "\097\116\116\097\099\107" or command == "\097\116\116\097\099\107\050" or command == "\097\116\116\097\099\107\051"
-        or command == "\097\116\116\097\099\107\052" or command == "\097\116\116\097\099\107\053" or command == "\115\110\105\112\101" then
+        or command == "\097\116\116\097\099\107\052" or command == "\097\116\116\097\099\107\053"
+        or command == "\115\110\105\112\101" or command == "\100\111\119\110"
+        or command == "\100\114\105\118\101\098\121" or command == "\097\109\098\117\115\104" then
         local target, issue = ExtraUI.standResolveTarget(sender, argument)
         if not target then
             ExtraUI.standStatus(issue)
@@ -5679,12 +6323,18 @@ ExtraUI.standHandleChat = function(sender, message)
                 "\112\108\097\121\101\114\032\109\105\115\115\105\110\103\044\032\108\101\102\116\044\032\111\114\032\110\097\109\101\032\097\109\098\105\103\117\111\117\115")
             return
         end
-        local ownerDownOnly = false  
+        local ownerDownOnly = command == "\100\111\119\110"
         local bag = Me:FindFirstChildOfClass("\066\097\099\107\112\097\099\107")
         local character = Me.Character
         local revolver = (character and character:FindFirstChild("\091\082\101\118\111\108\118\101\114\093"))
             or (bag and bag:FindFirstChild("\091\082\101\118\111\108\118\101\114\093"))
         if not revolver then
+            local ownHum = character and character:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
+            if not ownHum or ownHum.Health <= 0 then
+                ExtraUI.standRememberOrder(sender, command, argument)
+                ExtraUI.standStatus("\065\116\116\097\099\107\032\113\117\101\117\101\100\032\117\110\116\105\108\032\121\111\117\114\032\099\104\097\114\097\099\116\101\114\032\114\101\115\112\097\119\110\115\032\119\105\116\104\032\082\101\118\111\108\118\101\114\046")
+                return
+            end
             ExtraUI.standStatus("\082\101\118\111\108\118\101\114\032\105\115\032\110\111\116\032\105\110\032\121\111\117\114\032\105\110\118\101\110\116\111\114\121\046")
             ExtraUI.standReportIssue(command, target.Name, "\070\065\073\076\069\068", "\110\111\032\082\101\118\111\108\118\101\114\032\101\113\117\105\112\112\101\100\032\111\114\032\099\097\114\114\105\101\100")
             return
@@ -5725,7 +6375,9 @@ ExtraUI.standHandleChat = function(sender, message)
                     return
                 end
             end
-            ExtraUI.standStatus((command == "\115\110\105\112\101" and "\084\097\107\105\110\103\032\097\032\115\110\105\112\101\114\032\112\111\115\105\116\105\111\110\032\102\111\114\032\064"
+            ExtraUI.standStatus(((command == "\115\110\105\112\101" or command == "\100\111\119\110"
+                or command == "\097\109\098\117\115\104")
+                and "\084\097\107\105\110\103\032\097\032\115\110\105\112\101\114\032\112\111\115\105\116\105\111\110\032\102\111\114\032\064"
                 or "\083\116\097\114\116\105\110\103\032\065\117\116\111\032\075\105\108\108\032\111\110\032\064") .. target.Name .. "\046")
             local started, startError = ExtraUI.startAttackOne(
                 target, ownerDownOnly, command, true)
@@ -5735,7 +6387,7 @@ ExtraUI.standHandleChat = function(sender, message)
             end
             if S.autoKill then
                 ExtraUI.standStatus(ownerDownOnly
-                    and ("\065\116\116\097\099\107\105\110\103\032\111\119\110\101\114\032\064" .. target.Name .. "\059\032\115\116\111\112\032\111\110\032\100\111\119\110\044\032\110\111\032\115\116\111\109\112\046")
+                    and ("\068\111\119\110\105\110\103\032\064" .. target.Name .. "\032\102\114\111\109\032\114\097\110\103\101\059\032\110\111\032\115\116\111\109\112\046")
                     or command == "\097\116\116\097\099\107\051"
                     and ("\083\107\121\032\097\116\116\097\099\107\032\111\110\032\064" .. target.Name .. "\059\032\100\101\115\099\101\110\100\032\116\111\032\115\116\111\109\112\032\111\110\032\100\111\119\110\046")
                     or command == "\097\116\116\097\099\107\052"
@@ -5744,6 +6396,10 @@ ExtraUI.standHandleChat = function(sender, message)
                     and ("\084\105\103\104\116\032\111\114\098\105\116\032\097\116\116\097\099\107\032\111\110\032\064" .. target.Name .. "\046")
                     or command == "\115\110\105\112\101"
                     and ("\083\110\105\112\105\110\103\032\064" .. target.Name .. "\032\119\105\116\104\032\114\097\112\105\100\032\082\101\118\111\108\118\101\114\032\102\105\114\101\046")
+                    or command == "\100\114\105\118\101\098\121"
+                    and ("\068\114\105\118\105\110\103\032\112\097\115\116\032\064" .. target.Name .. "\059\032\116\104\101\110\032\099\108\111\115\105\110\103\032\116\111\032\102\105\110\105\115\104\046")
+                    or command == "\097\109\098\117\115\104"
+                    and ("\065\109\098\117\115\104\105\110\103\032\064" .. target.Name .. "\032\102\114\111\109\032\097\032\099\108\101\097\114\032\115\110\105\112\101\032\112\111\115\105\116\105\111\110\046")
                     or ("\065\116\116\097\099\107\105\110\103\032\064" .. target.Name .. "\032\119\105\116\104\032\114\101\118\111\108\118\101\114\059\032\115\116\111\109\112\032\111\110\032\100\111\119\110\046"))
             else
                 stopAutoKill()
@@ -5753,12 +6409,89 @@ ExtraUI.standHandleChat = function(sender, message)
     elseif command == "\115\116\097\116\117\115" then
         ExtraUI.standStatus(S.autoKill and Hook.lockPlayer
             and "\065\116\116\097\099\107\105\110\103\032\064" .. Hook.lockPlayer.Name
+            or S.standCounterPending and "\067\111\117\110\116\101\114\032\113\117\101\117\101\100\032\102\111\114\032\064" .. S.standCounterPending.Name
+            or S.standCounterTarget and ("\067\111\117\110\116\101\114\032\103\117\097\114\100\032\097\099\116\105\118\101\059\032\098\117\108\108\101\116\032\102\101\101\100\032"
+                .. (S.standCounterBulletHooked and "\099\111\110\110\101\099\116\101\100\046" or "\117\110\097\118\097\105\108\097\098\108\101\046"))
             or S.standFlinging and "\070\108\105\110\103\105\110\103\046"
             or S.standFollow and "\070\111\108\108\111\119\105\110\103\032\116\097\114\103\101\116\046"
             or S.standHoldRestore and "\072\111\108\100\105\110\103\032\112\111\115\105\116\105\111\110\046"
             or ("\083\116\097\110\100\105\110\103\032\098\121\046\032\065\070\075\032" .. (S.afkPermanent and "\079\078" or "\079\070\070") .. "\046"))
     end
+    if command == "\097\117\114\097" or command == "\112\114\111\116\101\099\116" or command == "\099\111\117\110\116\101\114"
+        or command == "\102\111\108\108\111\119" or command == "\115\116\097\121" or command == "\104\111\108\100"
+        or command == "\099\111\109\101" or command == "\103\111\116\111" or command == "\102\097\099\101"
+        or command == "\098\097\099\107" or command == "\101\113\117\105\112" or command == "\117\110\101\113\117\105\112"
+        or command == "\102\108\105\110\103" or command == "\115\112\105\110" or command == "\115\105\116"
+        or command == "\098\114\105\110\103" or command == "\097\116\116\097\099\107" or command == "\097\116\116\097\099\107\050"
+        or command == "\097\116\116\097\099\107\051" or command == "\097\116\116\097\099\107\052" or command == "\097\116\116\097\099\107\053"
+        or command == "\115\110\105\112\101" or command == "\100\111\119\110" or command == "\100\114\105\118\101\098\121"
+        or command == "\097\109\098\117\115\104" then
+        ExtraUI.standRememberOrder(sender, command, argument)
+    end
 end
+ExtraUI.standResumeSaved = function(character, force)
+    local saved = S.standSavedOrder
+    if not saved or not S.standEnabled or not S.standOwner
+        or saved.ownerUserId ~= S.standOwner.UserId then return end
+    if not force then
+        if saved.command == "\099\111\117\110\116\101\114" and S.standCounterTarget then return end
+        if (saved.command == "\097\117\114\097" or saved.command == "\112\114\111\116\101\099\116") and S.aura then return end
+        if saved.command == "\102\111\108\108\111\119" and S.standFollow then return end
+    end
+    S.standResumeGeneration = (S.standResumeGeneration or 0) + 1
+    local resumeGeneration = S.standResumeGeneration
+    task.spawn(function()
+        local deadline = os.clock() + 18
+        local ready = false
+        while not S.closed and S.standEnabled and S.standSavedOrder == saved
+            and resumeGeneration == S.standResumeGeneration
+            and os.clock() < deadline do
+            local current = Me.Character
+            local hum = current and current:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
+            local root = current and current:FindFirstChild("\072\117\109\097\110\111\105\100\082\111\111\116\080\097\114\116")
+            local bag = Me:FindFirstChildOfClass("\066\097\099\107\112\097\099\107")
+            local needsRevolver = saved.command == "\099\111\117\110\116\101\114"
+                or saved.command == "\097\116\116\097\099\107" or saved.command == "\097\116\116\097\099\107\050"
+                or saved.command == "\097\116\116\097\099\107\051" or saved.command == "\097\116\116\097\099\107\052"
+                or saved.command == "\097\116\116\097\099\107\053" or saved.command == "\115\110\105\112\101"
+                or saved.command == "\100\111\119\110" or saved.command == "\100\114\105\118\101\098\121"
+                or saved.command == "\097\109\098\117\115\104"
+            local revolver = current and current:FindFirstChild("\091\082\101\118\111\108\118\101\114\093")
+                or bag and bag:FindFirstChild("\091\082\101\118\111\108\118\101\114\093")
+            if current == character and hum and hum.Health > 0 and root
+                and (not needsRevolver or revolver) then
+                ready = true
+                break
+            end
+            task.wait(0.15)
+        end
+        if not ready or S.closed or not S.standEnabled
+            or S.standSavedOrder ~= saved
+            or resumeGeneration ~= S.standResumeGeneration then return end
+        task.wait(0.35)
+        if S.autoKill then stopAutoKill("\082\101\115\117\109\105\110\103\032\083\116\097\110\100\032\111\114\100\101\114\032\097\102\116\101\114\032\114\101\115\112\097\119\110\046") end
+        if S.closed or S.standSavedOrder ~= saved
+            or resumeGeneration ~= S.standResumeGeneration then return end
+        local pendingUserId = Env.SpectraStandCounterPendingUserId
+        S.standLastCommand = nil
+        local ok, issue = pcall(ExtraUI.standHandleChat, S.standOwner,
+            "\033" .. saved.command .. (saved.argument ~= "" and "\032" .. saved.argument or ""))
+        if saved.command == "\099\111\117\110\116\101\114" and pendingUserId
+            and S.standCounterTarget then
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player.UserId == pendingUserId then
+                    S.standCounterPending = player
+                    Env.SpectraStandCounterPendingUserId = pendingUserId
+                    break
+                end
+            end
+        end
+        if not ok then ExtraUI.standStatus("\067\111\117\108\100\032\110\111\116\032\114\101\115\116\111\114\101\032\083\116\097\110\100\032\111\114\100\101\114\058\032" .. tostring(issue)) end
+    end)
+end
+bind(Me.CharacterAdded:Connect(function(character)
+    ExtraUI.standResumeSaved(character, false)
+end))
 bind(ExtraUI.StandSetOwner.MouseButton1Click:Connect(function()
     local owner, issue = ExtraUI.standResolvePlayer(ExtraUI.StandOwnerInput.Text, true)
     if owner then ExtraUI.standSetOwner(owner)
@@ -5821,9 +6554,9 @@ bind(Bring.MouseButton1Click:Connect(function()
     startAutoKill(root.CFrame)
 end))
 
- 
- 
- 
+
+
+
 ExtraUI.antiLockRenderName = "\082\065\067\069\082\095\065\110\116\105\076\111\099\107\077\111\118\101\109\101\110\116"
 ExtraUI.updateAntiLock = function()
     pcall(function() RunService:UnbindFromRenderStep(ExtraUI.antiLockRenderName) end)
@@ -5853,7 +6586,7 @@ bind(ExtraUI.AntiLockBtn.MouseButton1Click:Connect(function()
         or "\065\110\116\105\045\108\111\099\107\032\109\111\118\101\109\101\110\116\032\100\105\115\097\098\108\101\100\046")
 end))
 
- 
+
 ExtraUI.configSlot = 1
 ExtraUI.configKeys = {"\113\117\105\101\116\065\117\116\111\075\105\108\108", "\097\117\116\111\075\105\108\108\086\111\105\100", "\097\110\116\105\086\111\105\100", "\097\117\116\111\065\114\109\111\114",
     "\097\110\116\105\083\116\111\109\112", "\097\117\116\111\083\116\111\109\112", "\115\116\111\109\112\065\110\105\109\097\116\105\111\110\069\110\097\098\108\101\100", "\115\116\111\109\112\080\097\099\101", "\107\110\105\102\101\084\114\097\118\101\108",
@@ -6069,7 +6802,7 @@ bind(ExtraUI.ConfigLoad.MouseButton1Click:Connect(function()
     ExtraUI.ConfigStatus.Text = "\076\111\097\100\101\100\032\115\108\111\116\032" .. ExtraUI.configSlot .. "\046"
 end))
 
- 
+
 local Dragging, DragStart, GuiStart, DragInput = false, nil, nil, nil
 bind(Heading.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1
@@ -6180,12 +6913,23 @@ if type(Env.SpectraStandOwnerUserId) == "\110\117\109\098\101\114" then
         if S.closed then return end
         for _, player in ipairs(Players:GetPlayers()) do
             if player.UserId == Env.SpectraStandOwnerUserId then
+                local savedOrder = Env.SpectraStandSavedOrder
+                local pendingUserId = Env.SpectraStandCounterPendingUserId
                 ExtraUI.standSetOwner(player)
                 S.standEnabled = Env.SpectraStandEnabled == true
                 style(ExtraUI.StandToggle, S.standEnabled,
                     "\076\073\083\084\069\078\058\032\079\078", "\076\073\083\084\069\078\058\032\079\070\070")
                 if S.standEnabled then
                     ExtraUI.standStatus("\076\105\115\116\101\110\105\110\103\032\116\111\032\064" .. player.Name .. "\046")
+                    if type(savedOrder) == "\116\097\098\108\101"
+                        and savedOrder.ownerUserId == player.UserId then
+                        S.standSavedOrder = savedOrder
+                        Env.SpectraStandSavedOrder = savedOrder
+                        Env.SpectraStandCounterPendingUserId = pendingUserId
+                        if Me.Character then
+                            ExtraUI.standResumeSaved(Me.Character, true)
+                        end
+                    end
                 end
                 return
             end
@@ -6201,7 +6945,7 @@ if Me.Character and (S.autoArmor or next(S.autoBuys)) then
     task.spawn(buyAutoItems, Me.Character)
 end
 
- 
+
 Main.Visible = false
 ExtraUI.LoadOverlay = make("\070\114\097\109\101", {Parent = Gui, Name = "\082\097\099\101\114\076\111\097\100\105\110\103",
     Size = UDim2.fromScale(1, 1), BackgroundColor3 = C_BG,
