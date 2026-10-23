@@ -1,4 +1,4 @@
--- RACER / Xeno compatibility gate / standalone Luau
+-- RACER / standalone Luau
  
  
  
@@ -45,128 +45,6 @@ if Env.RacerExecutorName == "\085\110\107\110\111\119\110" and type(getexecutorn
 end
 Env.RacerIsXeno = string.find(string.lower(Env.RacerExecutorName),
     "\120\101\110\111", 1, true) ~= nil
-
- 
- 
-if Env.RacerIsXeno then
-    local consent = Instance.new("\083\099\114\101\101\110\071\117\105")
-    consent.Name = "\082\065\067\069\082\095\088\101\110\111\067\111\110\115\101\110\116"
-    consent.IgnoreGuiInset = true
-    consent.ResetOnSpawn = false
-    consent.DisplayOrder = 10000
-    consent.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    consent.Parent = PlayerGui
-
-    local backdrop = Instance.new("\070\114\097\109\101")
-    backdrop.Name = "\066\097\099\107\100\114\111\112"
-    backdrop.Size = UDim2.fromScale(1, 1)
-    backdrop.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
-    backdrop.BackgroundTransparency = 0.22
-    backdrop.BorderSizePixel = 0
-    backdrop.Parent = consent
-
-    local card = Instance.new("\070\114\097\109\101")
-    card.Name = "\067\111\109\112\097\116\105\098\105\108\105\116\121\080\114\111\109\112\116"
-    card.AnchorPoint = Vector2.new(0.5, 0.5)
-    card.Position = UDim2.fromScale(0.5, 0.5)
-    card.Size = UDim2.fromOffset(510, 376)
-    card.BackgroundColor3 = Color3.fromRGB(25, 27, 33)
-    card.BorderSizePixel = 0
-    card.Parent = backdrop
-    local stroke = Instance.new("\085\073\083\116\114\111\107\101")
-    stroke.Color = Color3.fromRGB(78, 142, 255)
-    stroke.Thickness = 1
-    stroke.Parent = card
-
-    local function textLabel(name, text, y, height, size, color, bold)
-        local item = Instance.new("\084\101\120\116\076\097\098\101\108")
-        item.Name = name
-        item.Position = UDim2.fromOffset(24, y)
-        item.Size = UDim2.new(1, -48, 0, height)
-        item.BackgroundTransparency = 1
-        item.Text = text
-        item.TextWrapped = true
-        item.TextXAlignment = Enum.TextXAlignment.Left
-        item.TextYAlignment = Enum.TextYAlignment.Top
-        item.TextSize = size
-        item.Font = bold and Enum.Font.GothamBold or Enum.Font.Gotham
-        item.TextColor3 = color
-        item.Parent = card
-        return item
-    end
-    local heading = textLabel("\072\101\097\100\105\110\103", "\082\065\067\069\082\032\032\047\032\032\088\069\078\079\032\068\069\084\069\067\084\069\068", 22, 33, 22,
-        Color3.fromRGB(242, 245, 255), true)
-    local notice = textLabel("\078\111\116\105\099\101",
-        "\089\111\117\039\114\101\032\114\117\110\110\105\110\103\032\088\101\110\111\046\032\083\111\109\101\032\082\065\067\069\082\032\102\101\097\116\117\114\101\115\032\100\101\112\101\110\100\032\111\110\032\101\120\101\099\117\116\111\114\032\065\080\073\115\032" ..
-        "\116\104\097\116\032\109\097\121\032\098\101\032\109\105\115\115\105\110\103\032\111\114\032\117\110\115\117\112\112\111\114\116\101\100\032\105\110\032\121\111\117\114\032\098\117\105\108\100\046",
-        73, 63, 14, Color3.fromRGB(211, 217, 232), false)
-    local details = textLabel("\068\101\116\097\105\108\115",
-        "ACCEPT  -  Review available and limited features before loading.\n\n" ..
-        "\068\069\067\076\073\078\069\032\032\045\032\032\069\120\105\116\032\119\105\116\104\111\117\116\032\108\111\097\100\105\110\103\032\082\065\067\069\082\046",
-        156, 115, 13, Color3.fromRGB(170, 188, 213), false)
-
-    local function actionButton(name, title, x, color)
-        local btn = Instance.new("\084\101\120\116\066\117\116\116\111\110")
-        btn.Name = name
-        btn.Text = title
-        btn.Size = UDim2.fromOffset(219, 44)
-        btn.Position = UDim2.fromOffset(x, 309)
-        btn.BackgroundColor3 = color
-        btn.BorderSizePixel = 0
-        btn.TextColor3 = Color3.fromRGB(250, 250, 252)
-        btn.Font = Enum.Font.GothamBold
-        btn.TextSize = 13
-        btn.Parent = card
-        return btn
-    end
-    local acceptButton = actionButton("\065\099\099\101\112\116", "\065\067\067\069\080\084", 24, Color3.fromRGB(38, 78, 141))
-    local declineButton = actionButton("\068\101\099\108\105\110\101", "\068\069\067\076\073\078\069", 267, Color3.fromRGB(66, 54, 62))
-    local signal = Instance.new("\066\105\110\100\097\098\108\101\069\118\101\110\116")
-    local accepted, decided, showingFeatures = false, false, false
-    local function finish(choice)
-        if decided then return end
-        decided, accepted = true, choice
-        signal:Fire()
-    end
-    local acceptConn = acceptButton.MouseButton1Click:Connect(function()
-        if showingFeatures then
-            finish(true)
-            return
-        end
-        showingFeatures = true
-        heading.Text = "\088\069\078\079\032\032\047\032\032\070\069\065\084\085\082\069\032\083\085\080\080\079\082\084"
-        notice.Position = UDim2.fromOffset(24, 67)
-        notice.Size = UDim2.new(1, -48, 0, 82)
-        notice.Text = "AVAILABLE IN THE MENU\n" ..
-            "\084\097\114\103\101\116\032\115\101\108\101\099\116\105\111\110\044\032\110\111\116\105\102\105\099\097\116\105\111\110\115\044\032\065\110\116\105\045\083\116\111\109\112\044\032\109\111\118\101\109\101\110\116\044\032" ..
-            "\071\085\073\045\098\097\115\101\100\032\069\083\080\032\102\097\108\108\098\097\099\107\044\032\083\116\097\110\100\032\097\110\100\032\108\111\099\097\108\032\119\101\097\112\111\110\032\099\111\110\116\114\111\108\115\032" ..
-            "\040\105\110\100\105\118\105\100\117\097\108\032\097\099\116\105\111\110\115\032\100\101\112\101\110\100\032\111\110\032\103\097\109\101\047\099\108\105\101\110\116\032\115\117\112\112\111\114\116\041\046"
-        details.Position = UDim2.fromOffset(24, 163)
-        details.Size = UDim2.new(1, -48, 0, 138)
-        details.Text = "UNAVAILABLE IN XENO\n" ..
-            "Auto Buy and Auto Armor are disabled.\n\n" ..
-            "LIMITED / CONDITIONAL\n" ..
-            "\083\105\108\101\110\116\032\065\105\109\044\032\070\111\114\099\101\032\072\105\116\044\032\087\097\108\108\098\097\110\103\044\032\073\110\102\105\110\105\116\101\032\082\097\110\103\101\044\032" ..
-            "\065\117\116\111\032\075\105\108\108\032\097\110\100\032\066\114\105\110\103\032\114\101\113\117\105\114\101\032\071\117\110\077\097\110\097\103\101\114\032\097\099\099\101\115\115\046\032" ..
-            "\069\083\080\032\117\115\101\115\032\068\114\097\119\105\110\103\032\105\102\032\097\118\097\105\108\097\098\108\101\044\032\111\116\104\101\114\119\105\115\101\032\071\085\073\032\102\097\108\108\098\097\099\107\046"
-        acceptButton.Text = "\076\079\065\068\032\082\065\067\069\082"
-    end)
-    local declineConn = declineButton.MouseButton1Click:Connect(function()
-        finish(false)
-    end)
-    if not decided then signal.Event:Wait() end
-    acceptConn:Disconnect()
-    declineConn:Disconnect()
-    consent:Destroy()
-    signal:Destroy()
-    if not accepted then
-        for _, name in ipairs({"\083\112\101\099\116\114\097\083\101\108\101\099\116\067\108\101\097\110\117\112", "\068\065\072\095\076\105\116\101\067\108\101\097\110\117\112",
-            "\068\065\072\095\080\111\108\105\115\104\101\100\067\108\101\097\110\117\112"}) do
-            if type(Env[name]) == "\102\117\110\099\116\105\111\110" then pcall(Env[name]) end
-        end
-        return
-    end
-end
 
  
  
@@ -236,6 +114,7 @@ local S: any = {
     autoBuyIndex = 1,
     antiStomp = true,
     autoStomp = true,
+    stompSuppressed = false,  
     selectedStomp = false,
     selectedStompTarget = nil,
     selectedStompGeneration = 0,
@@ -299,6 +178,7 @@ local S: any = {
     noSpread = false,
     infiniteSmg = false,
     autoReloadAll = false,
+    knifeTravel = false,
     esp = {enabled = false, boxes = true, skeleton = false,
         names = true, distance = true, rangeIndex = 4, colorIndex = 1},
     themeIndex = 1,
@@ -1560,6 +1440,78 @@ do
             say("\075\110\105\102\101\032\101\113\117\105\112\112\101\100\046")
         else say("\075\110\105\102\101\032\105\115\032\110\111\116\032\105\110\032\121\111\117\114\032\098\097\099\107\112\097\099\107\046") end
     end))
+    ExtraUI.KnifeTravelBtn = button(ExtraUI.GunList, "\075\078\073\070\069\032\084\082\065\086\069\076\058\032\079\070\070", 5, 0, 326, 35)
+    ExtraUI.KnifeTravelBtn.LayoutOrder = 2
+    ExtraUI.knifeTravelGun = nil
+    ExtraUI.knifeTravelCombatAt = 0
+    ExtraUI.knifeTravelSwitchAt = 0
+    ExtraUI.knifeTravelTickAt = 0
+    ExtraUI.restoreTravelGun = function(fireAfterEquip)
+        local character = Me.Character
+        local hum = character and character:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
+        local bag = Me:FindFirstChildOfClass("\066\097\099\107\112\097\099\107")
+        local gun = ExtraUI.knifeTravelGun
+        if not hum or not gun or not bag or gun.Parent ~= bag then return false end
+        local ok = pcall(function() hum:EquipTool(gun) end)
+        if ok then
+            ExtraUI.knifeTravelSwitchAt = os.clock()
+            ExtraUI.knifeTravelCombatAt = os.clock()
+            if fireAfterEquip then
+                task.defer(function()
+                    if S.closed or Me.Character ~= character or gun.Parent ~= character then return end
+                    pcall(function() gun:Activate() end)
+                end)
+            end
+        end
+        return ok
+    end
+    bind(ExtraUI.KnifeTravelBtn.MouseButton1Click:Connect(function()
+        S.knifeTravel = not S.knifeTravel
+        style(ExtraUI.KnifeTravelBtn, S.knifeTravel,
+            "\075\078\073\070\069\032\084\082\065\086\069\076\058\032\079\078", "\075\078\073\070\069\032\084\082\065\086\069\076\058\032\079\070\070")
+        if not S.knifeTravel then ExtraUI.restoreTravelGun(false) end
+        say(S.knifeTravel and "\075\110\105\102\101\032\116\114\097\118\101\108\032\101\110\097\098\108\101\100\058\032\109\111\118\101\032\116\111\032\101\113\117\105\112\032\107\110\105\102\101\059\032\097\105\109\032\111\114\032\102\105\114\101\032\114\101\115\116\111\114\101\115\032\121\111\117\114\032\103\117\110\046"
+            or "\075\110\105\102\101\032\116\114\097\118\101\108\032\100\105\115\097\098\108\101\100\046")
+    end))
+    bind(UIS.InputBegan:Connect(function(input, processed)
+        if processed or not S.knifeTravel or S.closed or UIS:GetFocusedTextBox() then return end
+        local fire = input.UserInputType == Enum.UserInputType.MouseButton1
+        local aim = input.UserInputType == Enum.UserInputType.MouseButton2
+        if not fire and not aim then return end
+        ExtraUI.knifeTravelCombatAt = os.clock()
+        local character = Me.Character
+        local equipped = character and character:FindFirstChildOfClass("\084\111\111\108")
+        if equipped and equipped.Name == "\091\075\110\105\102\101\093" then
+            ExtraUI.restoreTravelGun(fire)
+        end
+    end))
+    bind(RunService.Heartbeat:Connect(function()
+        if not S.knifeTravel or S.closed then return end
+        local now = os.clock()
+        if now - ExtraUI.knifeTravelTickAt < 0.12 then return end
+        ExtraUI.knifeTravelTickAt = now
+        local character = Me.Character
+        local hum = character and character:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
+        local bag = Me:FindFirstChildOfClass("\066\097\099\107\112\097\099\107")
+        if not hum or not bag or hum.Health <= 0 or hum.MoveDirection.Magnitude < 0.25
+            or S.autoKill or S.resetInFlight or S.bring
+            or UIS:IsMouseButtonPressed(Enum.UserInputType.MouseButton2)
+            or now - ExtraUI.knifeTravelCombatAt < 1.4
+            or now - ExtraUI.knifeTravelSwitchAt < 0.4 then return end
+        local effects = character:FindFirstChild("\066\111\100\121\069\102\102\101\099\116\115")
+        local ko = effects and effects:FindFirstChild("\075\046\079")
+        if ko and ko.Value then return end
+        local equipped = character:FindFirstChildOfClass("\084\111\111\108")
+        if equipped and equipped.Name == "\091\075\110\105\102\101\093" then return end
+        local knife = bag:FindFirstChild("\091\075\110\105\102\101\093")
+        if not knife then return end
+        if equipped and equipped:FindFirstChild("\082\101\115\112\111\110\115\101") then
+            ExtraUI.knifeTravelGun = equipped
+        end
+        if not ExtraUI.knifeTravelGun then return end
+        local ok = pcall(function() hum:EquipTool(knife) end)
+        if ok then ExtraUI.knifeTravelSwitchAt = now end
+    end))
 end
 do
     if not ExtraUI.Capabilities.drawing then
@@ -2303,6 +2255,7 @@ local function downedPlayerBelow(character)
     return nil
 end
 local function autoStompTick(expectedModel, allowSelected)
+    if S.stompSuppressed then return end
     if os.clock() < NextAutoStompAt then return end
     local character = Me.Character
     if not character or not character:FindFirstChild("\070\085\076\076\089\095\076\079\065\068\069\068\095\067\072\065\082")
@@ -2358,7 +2311,8 @@ local function autoStompTick(expectedModel, allowSelected)
     local victimDead = victimEffects and victimEffects:FindFirstChild("\068\101\097\100")
     local stillStompable = (victimKO and victimKO.Value)
         or (victimDead and victimDead.Value) or victimHumanoid.Health <= 0
-    if S.closed or not (S.autoStomp or allowSelected) or Me.Character ~= character
+    if S.closed or S.stompSuppressed or not (S.autoStomp or allowSelected)
+        or Me.Character ~= character
         or not victimHumanoid.Parent or not stillStompable then return end
     main:FireServer("\083\116\111\109\112\082\101\109\111\116\101", AutoStompTrack, effects, victimHumanoid, proof)
     NextAutoStompAt = os.clock() + S.stompPace * 0.75
@@ -2374,6 +2328,7 @@ local function updateAutoStomp()
             local ok = pcall(autoStompTick)
             if not ok then
                 S.autoStomp = false
+                S.stompSuppressed = true
                 style(AutoStompBtn, false, "\065\085\084\079\032\083\084\079\077\080\058\032\079\078", "\065\085\084\079\032\083\084\079\077\080\058\032\079\070\070")
                 say("\065\117\116\111\032\115\116\111\109\112\032\115\116\111\112\112\101\100\032\097\102\116\101\114\032\097\032\114\097\121\099\097\115\116\032\111\114\032\114\101\109\111\116\101\032\101\114\114\111\114\046")
                 break
@@ -3570,14 +3525,18 @@ bind(ResetThresholdBtn.MouseButton1Click:Connect(function()
 end))
 bind(AutoStompBtn.MouseButton1Click:Connect(function()
     if S.bringStompRestore ~= nil then
-        say("\065\117\116\111\032\115\116\111\109\112\032\105\115\032\112\097\117\115\101\100\032\102\111\114\032\066\114\105\110\103\046")
+        S.bringStompRestore = not S.bringStompRestore
+        S.stompSuppressed = true
+        say(S.bringStompRestore and "\065\117\116\111\032\115\116\111\109\112\032\119\105\108\108\032\114\101\115\117\109\101\032\097\102\116\101\114\032\066\114\105\110\103\046"
+            or "\065\117\116\111\032\115\116\111\109\112\032\119\105\108\108\032\115\116\097\121\032\111\102\102\032\097\102\116\101\114\032\066\114\105\110\103\059\032\097\108\108\032\115\099\114\105\112\116\101\100\032\115\116\111\109\112\115\032\115\116\111\112\112\101\100\046")
         return
     end
     S.autoStomp = not S.autoStomp
+    S.stompSuppressed = not S.autoStomp
     style(AutoStompBtn, S.autoStomp, "\065\085\084\079\032\083\084\079\077\080\058\032\079\078", "\065\085\084\079\032\083\084\079\077\080\058\032\079\070\070")
     updateAutoStomp()
     say(S.autoStomp and "\065\117\116\111\032\115\116\111\109\112\058\032\114\101\112\101\097\116\115\032\083\116\111\109\112\082\101\109\111\116\101\032\111\118\101\114\032\075\046\079\032\111\114\032\100\101\097\100\032\098\111\100\105\101\115\046"
-        or "\065\117\116\111\032\115\116\111\109\112\032\100\105\115\097\098\108\101\100\046")
+        or "\065\117\116\111\032\115\116\111\109\112\032\100\105\115\097\098\108\101\100\059\032\115\101\108\101\099\116\101\100\032\097\110\100\032\097\117\116\111\045\107\105\108\108\032\115\116\111\109\112\115\032\097\114\101\032\112\097\117\115\101\100\032\116\111\111\046")
 end))
 bind(ExtraUI.StompAnimationBtn.MouseButton1Click:Connect(function()
     S.stompAnimationEnabled = not S.stompAnimationEnabled
@@ -3668,7 +3627,8 @@ bind(SelectedStompBtn.MouseButton1Click:Connect(function()
             local dead = effects and effects:FindFirstChild("\068\101\097\100")
             local downed = rec.humanoid.Health <= 0 or (ko and ko.Value)
                 or (dead and dead.Value)
-            if downed and S.bringStompRestore == nil and not S.autoKill
+            if downed and not S.stompSuppressed
+                and S.bringStompRestore == nil and not S.autoKill
                 and not S.resetInFlight then
                 local character = Me.Character
                 local rightLeg = ExtraUI.selectedStompRightLeg(character)
@@ -3742,6 +3702,7 @@ local function restoreBringStomp()
     S.bringStompAwaitDistance = false
     S.bringStompGeneration = S.bringStompGeneration + 1
     S.autoStomp = previous
+    S.stompSuppressed = not previous
     style(AutoStompBtn, S.autoStomp, "\065\085\084\079\032\083\084\079\077\080\058\032\079\078", "\065\085\084\079\032\083\084\079\077\080\058\032\079\070\070")
     updateAutoStomp()
 end
@@ -3752,6 +3713,7 @@ local function pauseBringStomp()
     S.bringStompGeneration = S.bringStompGeneration + 1
     local generation = S.bringStompGeneration
     S.autoStomp = false
+    S.stompSuppressed = true
     style(AutoStompBtn, false, "\065\085\084\079\032\083\084\079\077\080\058\032\079\078", "\065\085\084\079\032\083\084\079\077\080\058\032\079\070\070")
     updateAutoStomp()
     task.spawn(function()
@@ -5541,7 +5503,7 @@ end))
  
 ExtraUI.configSlot = 1
 ExtraUI.configKeys = {"\113\117\105\101\116\065\117\116\111\075\105\108\108", "\097\117\116\111\075\105\108\108\086\111\105\100", "\097\110\116\105\086\111\105\100", "\097\117\116\111\065\114\109\111\114",
-    "\097\110\116\105\083\116\111\109\112", "\097\117\116\111\083\116\111\109\112", "\115\116\111\109\112\065\110\105\109\097\116\105\111\110\069\110\097\098\108\101\100", "\115\116\111\109\112\080\097\099\101",
+    "\097\110\116\105\083\116\111\109\112", "\097\117\116\111\083\116\111\109\112", "\115\116\111\109\112\065\110\105\109\097\116\105\111\110\069\110\097\098\108\101\100", "\115\116\111\109\112\080\097\099\101", "\107\110\105\102\101\084\114\097\118\101\108",
     "\114\101\115\101\116\084\104\114\101\115\104\111\108\100\073\110\100\101\120", "\115\116\114\097\102\101\082\097\100\105\117\115", "\118\111\105\100\068\101\112\116\104", "\117\105\083\099\097\108\101",
     "\114\101\115\112\097\119\110\065\116\068\101\097\116\104", "\097\100\097\112\116\105\118\101\082\097\112\105\100", "\110\111\082\101\099\111\105\108", "\110\111\083\112\114\101\097\100",
     "\105\110\118\105\115\105\098\108\101\083\104\111\116", "\105\110\102\105\110\105\116\101\083\109\103", "\097\117\116\111\082\101\108\111\097\100\065\108\108", "\116\104\101\109\101\073\110\100\101\120", "\109\097\099\114\111\076\111\099\107",
@@ -5619,6 +5581,7 @@ bind(ExtraUI.ConfigLoad.MouseButton1Click:Connect(function()
     for _, key in ipairs(ExtraUI.configKeys) do
         if type(settings[key]) == type(S[key]) then S[key] = settings[key] end
     end
+    S.stompSuppressed = not S.autoStomp
     if ExtraUI.Capabilities.gunManager == false then
         S.infiniteRange, S.noSpread = false, false
         S.bulletMode = 1
@@ -5698,6 +5661,8 @@ bind(ExtraUI.ConfigLoad.MouseButton1Click:Connect(function()
         resetBeforeStomp(Me.Character, ownDangerReason(Me.Character))
     end
     style(AutoStompBtn, S.autoStomp, "\065\085\084\079\032\083\084\079\077\080\058\032\079\078", "\065\085\084\079\032\083\084\079\077\080\058\032\079\070\070")
+    style(ExtraUI.KnifeTravelBtn, S.knifeTravel,
+        "\075\078\073\070\069\032\084\082\065\086\069\076\058\032\079\078", "\075\078\073\070\069\032\084\082\065\086\069\076\058\032\079\070\070")
     style(ExtraUI.StompAnimationBtn, S.stompAnimationEnabled,
         "\083\084\079\077\080\032\065\078\073\077\065\084\073\079\078\058\032\079\078", "\083\084\079\077\080\032\065\078\073\077\065\084\073\079\078\058\032\079\070\070")
     style(ExtraUI.RespawnDeathBtn, S.respawnAtDeath,
@@ -5777,6 +5742,7 @@ end))
 local function cleanup()
     if S.closed then return end
     S.closed = true
+    S.knifeTravel = false
     S.resetGeneration = S.resetGeneration + 1
     S.resetCharacter = nil
     S.resetInFlight = false
@@ -5848,6 +5814,8 @@ else
 end
 style(AntiStompBtn, S.antiStomp, "\065\078\084\073\032\083\084\079\077\080\058\032\079\078", "\065\078\084\073\032\083\084\079\077\080\058\032\079\070\070")
 style(AutoStompBtn, S.autoStomp, "\065\085\084\079\032\083\084\079\077\080\058\032\079\078", "\065\085\084\079\032\083\084\079\077\080\058\032\079\070\070")
+style(ExtraUI.KnifeTravelBtn, S.knifeTravel,
+    "\075\078\073\070\069\032\084\082\065\086\069\076\058\032\079\078", "\075\078\073\070\069\032\084\082\065\086\069\076\058\032\079\070\070")
 style(ExtraUI.StompAnimationBtn, S.stompAnimationEnabled,
     "\083\084\079\077\080\032\065\078\073\077\065\084\073\079\078\058\032\079\078", "\083\084\079\077\080\032\065\078\073\077\065\084\073\079\078\058\032\079\070\070")
 if type(Env.SpectraStandOwnerUserId) == "\110\117\109\098\101\114" then
