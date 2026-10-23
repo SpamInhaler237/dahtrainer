@@ -1,23 +1,3 @@
- 
- 
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 local Players = game:GetService("\080\108\097\121\101\114\115")
 local Workspace = game:GetService("\087\111\114\107\115\112\097\099\101")
 local ReplicatedStorage = game:GetService("\082\101\112\108\105\099\097\116\101\100\083\116\111\114\097\103\101")
