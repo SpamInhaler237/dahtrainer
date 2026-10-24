@@ -25,8 +25,8 @@ end
 Env.RacerIsXeno = string.find(string.lower(Env.RacerExecutorName),
     "\120\101\110\111", 1, true) ~= nil
 
-
-
+ 
+ 
 if not Env.RacerIsXeno and type(queue_on_teleport) == "\102\117\110\099\116\105\111\110" then
     pcall(function()
         queue_on_teleport([=[
@@ -37,7 +37,7 @@ if not Env.RacerIsXeno and type(queue_on_teleport) == "\102\117\110\099\116\105\
     end)
 end
 
-
+ 
 for _, name in ipairs({
     "\083\112\101\099\116\114\097\083\101\108\101\099\116\067\108\101\097\110\117\112", "\068\065\072\095\076\105\116\101\067\108\101\097\110\117\112", "\068\065\072\095\080\111\108\105\115\104\101\100\067\108\101\097\110\117\112",
     "\068\065\072\095\079\112\116\105\109\105\122\101\100\067\108\101\097\110\117\112", "\068\065\072\095\065\108\108\073\110\079\110\101\095\067\108\101\097\110\117\112", "\068\065\072\095\065\105\109\071\117\105\067\108\101\097\110\117\112"
@@ -63,18 +63,18 @@ for _, name in ipairs({"\082\065\067\069\082\095\085\073", "\083\080\069\067\084
     if old then old:Destroy() end
 end
 
-local MAX_TARGETS = 1000 
+local MAX_TARGETS = 1000  
 local S: any = {
     closed = false,
     multi = false,
-    antiLock = false, 
-    aliveOnly = true,     
-    primary = nil,        
+    antiLock = false,  
+    aliveOnly = true,      
+    primary = nil,         
     aimPlayer = nil,
     aimRecord = nil,
     silent = false,
     wallBang = false,
-    bulletMode = 1,       
+    bulletMode = 1,        
     bulletStep = 0,
     forceHit = false,
     aura = false,
@@ -108,7 +108,7 @@ local S: any = {
     autoBuyIndex = 1,
     antiStomp = true,
     autoStomp = true,
-    stompSuppressed = false, 
+    stompSuppressed = false,  
     selectedStomp = false,
     selectedStompTarget = nil,
     selectedStompGeneration = 0,
@@ -160,7 +160,7 @@ local S: any = {
     chatSpyOriginal = nil,
     jumpBypass = false,
     jumpBypassGeneration = 0,
-    standEnabledRapid = nil,       
+    standEnabledRapid = nil,        
     standAttack2FinisherPlayed = false,
     standAttack2LaunchQueued = false,
     standLastCommand = nil,
@@ -183,7 +183,7 @@ local S: any = {
     strafeRadius = 7.5,
     uiScale = 1,
     rapidWeapons = {},
-    adaptiveRapid = false, 
+    adaptiveRapid = false,  
     lastAttemptWeaponName = nil,
     noRecoil = false,
     invisibleShot = false,
@@ -199,13 +199,15 @@ local S: any = {
     resetCharacter = nil,
     resetInFlight = false,
     antiStompReady = false,
-    antiStompTriggeredCharacter = nil, 
+    antiStompTriggeredCharacter = nil,  
     antiStompConfirmedCharacter = nil,
     antiStompSpawnGraceUntil = 0,
     lastResetAt = 0,
-    resetGeneration = 0, 
+    resetGeneration = 0,  
     cursorKeyEnabled = true,
-    macroLock = false,
+    fpsShare = false,
+    fpsBase = 999,
+    fpsDrop = 150,
     notify = {
         enabled = true, popups = true,
         downed = true, dead = true, respawned = true,
@@ -225,9 +227,9 @@ ExtraUI.Capabilities = {
     connections = type(getconnections) == "\102\117\110\099\116\105\111\110"
         and type(debug) == "\116\097\098\108\101" and type(debug.getupvalues) == "\102\117\110\099\116\105\111\110",
 }
-
-
-
+ 
+ 
+ 
 ExtraUI.Capabilities.shopPurchase = not Env.RacerIsXeno
 Env.RacerFeatureSupport = ExtraUI.Capabilities
 ExtraUI.Capabilities.drawing = false
@@ -239,13 +241,13 @@ if type(Drawing) == "\116\097\098\108\101" and type(Drawing.new) == "\102\117\11
     end
 end
 local DeathPosition = nil
-local PlayerConnections = {} 
+local PlayerConnections = {}  
 local RowConnections = {}
 local Rows = {}
 local TargetSet, TargetList, Records = {}, {}, {}
-local TargetByModelName = {} 
-local Folders = {} 
-local ResolutionTokens = {} 
+local TargetByModelName = {}  
+local Folders = {}  
+local ResolutionTokens = {}  
 local NextResolutionToken = 0
 local TickGeneration = 0
 local RenderConnection = nil
@@ -264,8 +266,8 @@ local AutoStompGeneration = 0
 local NextAutoStompAt = 0
 local AutoStompTrackCharacter = nil
 local AutoStompTrack = nil
-local updateLoops 
-local targetTick 
+local updateLoops  
+local targetTick  
 
 local C_BG = Color3.fromRGB(11, 15, 19)
 local C_PANEL = Color3.fromRGB(20, 27, 32)
@@ -294,7 +296,7 @@ local function make(className, props)
     return instance
 end
 local function round(obj, radius)
-    
+     
     return obj
 end
 local function label(parent, title, y, height, color, size)
@@ -339,7 +341,7 @@ local function style(btn, value, on, off)
     if stroke then stroke.Color = value and C_ACCENT or C_BORDER end
 end
 
-
+ 
 local Gui = make("\083\099\114\101\101\110\071\117\105", {
     Name = "\082\065\067\069\082\095\085\073", Parent = PlayerGui, ResetOnSpawn = false,
     DisplayOrder = 2200, IgnoreGuiInset = true,
@@ -627,7 +629,7 @@ ExtraUI.StandStatus = label(ExtraUI.StandPage, "\083\116\097\110\100\105\110\103
 ExtraUI.StandStatus.TextWrapped = true
 ExtraUI.StandStatus.TextTruncate = Enum.TextTruncate.None
 
-
+ 
 ExtraUI.Notify = {watchers = {}, knownModels = {}, lastRespawnAt = {}, log = {}}
 label(ExtraUI.NotifyPage, "\078\079\084\073\070\073\067\065\084\073\079\078\083\032\032\047\032\032\083\069\076\069\067\084\069\068\032\084\065\082\071\069\084\083", 15, 23, C_ACCENT, 12)
 label(ExtraUI.NotifyPage, "\084\114\097\099\107\115\032\115\101\108\101\099\116\101\100\032\112\108\097\121\101\114\115\032\111\110\108\121\059\032\110\111\032\099\111\110\116\105\110\117\111\117\115\032\115\099\097\110\115\046", 39, 20, C_FAINT, 10)
@@ -717,7 +719,7 @@ ExtraUI.Notify.emit = function(key, message)
         for _, child in ipairs(ExtraUI.NotifyHistory:GetChildren()) do
             if child:IsA("\084\101\120\116\076\097\098\101\108") and child ~= entry
                 and child.LayoutOrder < math.huge then
-                
+                 
                 local oldest = child
                 for _, other in ipairs(ExtraUI.NotifyHistory:GetChildren()) do
                     if other:IsA("\084\101\120\116\076\097\098\101\108") and other.LayoutOrder > oldest.LayoutOrder then
@@ -836,12 +838,185 @@ ExtraUI.ConfigSave = button(ExtraUI.ConfigPage, "\083\065\086\069\032\083\069\07
 ExtraUI.ConfigLoad = button(ExtraUI.ConfigPage, "\076\079\065\068\032\083\069\076\069\067\084\069\068\032\083\076\079\084", 12, 198, 342, 42)
 ExtraUI.ConfigStatus = label(ExtraUI.ConfigPage, "\083\108\111\116\032\049\032\115\101\108\101\099\116\101\100\046", 263, 48, C_FAINT, 11)
 ExtraUI.ConfigStatus.TextWrapped = true
-ExtraUI.MacroBtn = button(ExtraUI.ConfigPage, "\077\065\067\082\079\032\080\069\082\083\073\083\084\058\032\079\070\070", 12, 313, 342, 39)
-label(ExtraUI.ConfigPage, "\075\101\101\112\032\116\104\101\032\103\097\109\101\039\115\032\109\097\099\114\111\032\097\099\116\105\118\101\032\116\104\114\111\117\103\104\032\110\111\114\109\097\108\032\097\099\116\105\111\110\115\046",
-    365, 27, C_FAINT, 10)
-label(ExtraUI.ConfigPage, "\069\088\069\067\085\084\079\082\058\032" .. string.upper(ExtraUI.ExecutorName)
-    .. "\032\032\047\032\032\076\079\065\068\032\080\082\079\070\073\076\069\083\032\077\065\078\085\065\076\076\089",
-    402, 24, C_FAINT, 10)
+label(ExtraUI.ConfigPage, "\070\080\083\032\083\072\065\082\069\032\032\047\032\032\066\079\068\089\032\068\073\083\080\076\065\089", 315, 18, C_ACCENT, 11)
+ExtraUI.FpsToggle = button(ExtraUI.ConfigPage, "\070\080\083\032\083\072\065\082\069\058\032\079\070\070", 12, 336, 342, 28)
+make("\084\101\120\116\076\097\098\101\108", {Parent = ExtraUI.ConfigPage,
+    Position = UDim2.fromOffset(12, 365), Size = UDim2.fromOffset(166, 13),
+    BackgroundTransparency = 1, Text = "\066\065\083\069\032\070\080\083", TextColor3 = C_FAINT,
+    Font = Enum.Font.Gotham, TextSize = 10,
+    TextXAlignment = Enum.TextXAlignment.Left})
+make("\084\101\120\116\076\097\098\101\108", {Parent = ExtraUI.ConfigPage,
+    Position = UDim2.fromOffset(188, 365), Size = UDim2.fromOffset(166, 13),
+    BackgroundTransparency = 1, Text = "\068\082\079\080\032\066\089", TextColor3 = C_FAINT,
+    Font = Enum.Font.Gotham, TextSize = 10,
+    TextXAlignment = Enum.TextXAlignment.Left})
+ExtraUI.FpsBaseBox = make("\084\101\120\116\066\111\120", {Parent = ExtraUI.ConfigPage,
+    Position = UDim2.fromOffset(12, 379), Size = UDim2.fromOffset(166, 26),
+    BackgroundColor3 = C_OFF, BorderSizePixel = 0, Text = "\057\057\057",
+    PlaceholderText = "\066\065\083\069\032\070\080\083", ClearTextOnFocus = false,
+    TextColor3 = C_TEXT, Font = Enum.Font.GothamBold, TextSize = 12})
+ExtraUI.FpsDropBox = make("\084\101\120\116\066\111\120", {Parent = ExtraUI.ConfigPage,
+    Position = UDim2.fromOffset(188, 379), Size = UDim2.fromOffset(166, 26),
+    BackgroundColor3 = C_OFF, BorderSizePixel = 0, Text = "\049\053\048",
+    PlaceholderText = "\068\082\079\080\032\066\089", ClearTextOnFocus = false,
+    TextColor3 = C_TEXT, Font = Enum.Font.GothamBold, TextSize = 12})
+ExtraUI.FpsApply = button(ExtraUI.ConfigPage, "\065\080\080\076\089\032\070\080\083\032\086\065\076\085\069\083", 12, 409, 342, 24)
+label(ExtraUI.ConfigPage,
+    "\065\098\111\118\101\032\057\057\057\032\105\115\032\108\111\099\097\108\032\111\110\108\121\046\032\077\097\121\032\108\111\119\101\114\032\070\080\083\032\119\104\105\108\101\032\101\110\097\098\108\101\100\046", 436, 13, C_FAINT, 10)
+
+do
+    local fpsRemote = ReplicatedStorage:WaitForChild("\083\116\111\114\097\103\101")
+        :WaitForChild("\082\101\109\111\116\101\115"):WaitForChild("\070\080\083\083\104\097\114\101")
+    local fps: any = {active = false, base = S.fpsBase, drop = S.fpsDrop,
+        value = S.fpsBase, dropped = false, generation = 0}
+    local fpsHookData = nil
+    ExtraUI.FpsState = fps
+
+    local function clearOverlay()
+        if fps.originalFrame and fps.originalFrame.Parent then
+            fps.originalFrame.Visible = true
+        end
+        if fps.overlay then fps.overlay:Destroy() end
+        fps.tag, fps.originalFrame, fps.overlay, fps.label = nil, nil, nil, nil
+        fps.lastValue, fps.lastPing = nil, nil
+    end
+
+    local function refreshOverlay()
+        if fps.base <= 999 then
+            if fps.overlay then clearOverlay() end
+            return
+        end
+        local character = Me.Character
+        local torso = character and (character:FindFirstChild("\085\112\112\101\114\084\111\114\115\111")
+            or character:FindFirstChild("\084\111\114\115\111"))
+        local tag = torso and torso:FindFirstChild("\102\112\115\116\097\103")
+        if tag ~= fps.tag then
+            clearOverlay()
+            if tag then
+                local frame = tag:FindFirstChildWhichIsA("\070\114\097\109\101")
+                if frame then
+                    fps.tag, fps.originalFrame = tag, frame
+                    fps.overlay = tag:Clone()
+                    fps.overlay.Name = "\078\111\115\114\070\080\083\076\111\099\097\108\084\097\103"
+                    fps.overlay.Size = UDim2.new(6, 0, 0.55, 0)
+                    fps.overlay.Parent = torso
+                    local copyFrame = fps.overlay:FindFirstChildWhichIsA("\070\114\097\109\101")
+                    if copyFrame then copyFrame.Visible = true end
+                    fps.label = fps.overlay:FindFirstChildWhichIsA("\084\101\120\116\076\097\098\101\108", true)
+                    frame.Visible = false
+                end
+            end
+        end
+        if not fps.overlay or not fps.label or not fps.tag then return end
+        if fps.overlay.Enabled ~= fps.tag.Enabled then
+            fps.overlay.Enabled = fps.tag.Enabled
+        end
+        local ping = Me:GetAttribute("\080\105\110\103")
+        if fps.value == fps.lastValue and ping == fps.lastPing then return end
+        fps.lastValue, fps.lastPing = fps.value, ping
+        local display = '\060\102\111\110\116\032\099\111\108\111\114\061\034\035\053\053\102\102\055\102\034\062' .. tostring(fps.value)
+            .. '\060\047\102\111\110\116\062\060\102\111\110\116\032\099\111\108\111\114\061\034\035\098\057\098\057\099\048\034\062\032\070\080\083\060\047\102\111\110\116\062'
+        if ping then
+            display = display .. '\060\102\111\110\116\032\099\111\108\111\114\061\034\035\054\101\054\101\055\054\034\062\032\032\124\032\032\060\047\102\111\110\116\062'
+                .. '\060\102\111\110\116\032\099\111\108\111\114\061\034\035\102\102\099\102\055\049\034\062' .. tostring(ping) .. '\109\115\060\047\102\111\110\116\062'
+        end
+        fps.label.Text = display
+    end
+
+    local function attachHook()
+        if type(hookmetamethod) ~= "\102\117\110\099\116\105\111\110"
+            or type(newcclosure) ~= "\102\117\110\099\116\105\111\110"
+            or type(getnamecallmethod) ~= "\102\117\110\099\116\105\111\110"
+            or type(checkcaller) ~= "\102\117\110\099\116\105\111\110" then
+            return false
+        end
+        local previousGui = shared.NosrFPSGui
+        if previousGui and type(previousGui.stop) == "\102\117\110\099\116\105\111\110" then
+            pcall(previousGui.stop)
+        end
+        fpsHookData = shared.NosrFPSHook
+        if not fpsHookData or fpsHookData.remote ~= fpsRemote then
+            fpsHookData = {remote = fpsRemote, activeState = nil}
+            local previous
+            previous = hookmetamethod(game, "\095\095\110\097\109\101\099\097\108\108", newcclosure(function(self, ...)
+                if self == fpsHookData.remote and getnamecallmethod() == "\070\105\114\101\083\101\114\118\101\114"
+                    and not checkcaller() then
+                    local current = fpsHookData.activeState
+                    if current and current.active then
+                        current.dropped = not current.dropped
+                        current.value = current.dropped
+                            and (current.base - current.drop) or current.base
+                        return previous(self, math.min(current.value, 999))
+                    end
+                end
+                return previous(self, ...)
+            end))
+            shared.NosrFPSHook = fpsHookData
+        end
+        fpsHookData.remote = fpsRemote
+        fpsHookData.activeState = fps
+        return true
+    end
+
+    ExtraUI.stopFpsShare = function()
+        fps.active = false
+        fps.generation = fps.generation + 1
+        if fpsHookData and fpsHookData.activeState == fps then
+            fpsHookData.activeState = nil
+        end
+        clearOverlay()
+    end
+    ExtraUI.syncFpsShare = function()
+        ExtraUI.FpsBaseBox.Text = tostring(S.fpsBase)
+        ExtraUI.FpsDropBox.Text = tostring(S.fpsDrop)
+        if not S.fpsShare then
+            ExtraUI.stopFpsShare()
+            style(ExtraUI.FpsToggle, false, "\070\080\083\032\083\072\065\082\069\058\032\079\078", "\070\080\083\032\083\072\065\082\069\058\032\079\070\070")
+            return
+        end
+        local ok, attached = pcall(attachHook)
+        if not ok or not attached then
+            S.fpsShare = false
+            ExtraUI.stopFpsShare()
+            ExtraUI.FpsToggle.Text = "\070\080\083\032\083\072\065\082\069\058\032\085\078\065\086\065\073\076\065\066\076\069"
+            ExtraUI.ConfigStatus.Text = "\070\080\083\032\083\104\097\114\101\032\110\101\101\100\115\032\082\101\097\108\039\115\032\110\097\109\101\099\097\108\108\032\104\111\111\107\046"
+            return
+        end
+        fps.base, fps.drop = S.fpsBase, S.fpsDrop
+        fps.value, fps.dropped, fps.active = S.fpsBase, false, true
+        fps.generation = fps.generation + 1
+        local generation = fps.generation
+        task.spawn(function()
+            while not S.closed and S.fpsShare and generation == fps.generation do
+                refreshOverlay()
+                task.wait(0.12)
+            end
+        end)
+        fpsRemote:FireServer(math.min(fps.value, 999))
+        style(ExtraUI.FpsToggle, true, "\070\080\083\032\083\072\065\082\069\058\032\079\078", "\070\080\083\032\083\072\065\082\069\058\032\079\070\070")
+    end
+    local function readFpsBoxes()
+        local base = tonumber(ExtraUI.FpsBaseBox.Text)
+        local drop = tonumber(ExtraUI.FpsDropBox.Text)
+        if not base or not drop then
+            ExtraUI.ConfigStatus.Text = "\069\110\116\101\114\032\118\097\108\105\100\032\070\080\083\032\097\110\100\032\100\114\111\112\032\110\117\109\098\101\114\115\046"
+            return false
+        end
+        S.fpsBase = math.clamp(math.floor(base), 1, 1000000000000)
+        S.fpsDrop = math.clamp(math.floor(drop), 0, S.fpsBase - 1)
+        return true
+    end
+    bind(ExtraUI.FpsToggle.MouseButton1Click:Connect(function()
+        if not S.fpsShare and not readFpsBoxes() then return end
+        S.fpsShare = not S.fpsShare
+        ExtraUI.syncFpsShare()
+    end))
+    bind(ExtraUI.FpsApply.MouseButton1Click:Connect(function()
+        if not readFpsBoxes() then return end
+        ExtraUI.syncFpsShare()
+        ExtraUI.ConfigStatus.Text = "\070\080\083\032\118\097\108\117\101\115\032\097\112\112\108\105\101\100\032\097\116\032\048\046\056\115\032\105\110\116\101\114\118\097\108\115\046"
+    end))
+end
 
 label(SettingsPage, "\077\079\086\069\077\069\078\084\032\038\032\080\069\082\083\079\078\065\076\073\083\065\084\073\079\078", 12, 20, C_ACCENT, 12)
 local AntiVoidBtn = button(SettingsPage, "\065\078\084\073\032\086\079\073\068\058\032\079\078", 12, 39, 342, 34)
@@ -897,7 +1072,7 @@ local setStompPace = slider(SettingsPage, "\065\085\084\079\032\083\084\079\077\
     (math.log10(S.stompPace) + MinStompPaceExponent) / MinStompPaceExponent,
     function(f) return 10 ^ (-MinStompPaceExponent + MinStompPaceExponent * f) end,
     function(value) S.stompPace = value end,
-    function(value) return string.format("%.3g×", value) end)
+    function(value) return string.format("\037\046\051\103\195\151", value) end)
 local PaceMax = button(SettingsPage, "\077\065\088", 12, 174, 106, 28)
 local PaceFast = button(SettingsPage, "\070\065\083\084", 130, 174, 106, 28)
 local PaceNormal = button(SettingsPage, "\078\079\082\077\065\076", 248, 174, 106, 28)
@@ -906,7 +1081,7 @@ bind(PaceFast.MouseButton1Click:Connect(function()
     setStompPace((math.log10(0.05) + MinStompPaceExponent) / MinStompPaceExponent)
 end))
 bind(PaceNormal.MouseButton1Click:Connect(function() setStompPace(1) end))
-label(SettingsPage, "Minimum 1e-282×; game frames limit actual calls.", 206, 17, C_FAINT, 10)
+label(SettingsPage, "\077\105\110\105\109\117\109\032\049\101\045\050\056\050\195\151\059\032\103\097\109\101\032\102\114\097\109\101\115\032\108\105\109\105\116\032\097\099\116\117\097\108\032\099\097\108\108\115\046", 206, 17, C_FAINT, 10)
 ExtraUI.setStrafeRadius = slider(SettingsPage, "\083\084\082\065\070\069\032\082\065\068\073\085\083", 230, (S.strafeRadius - 4) / 10,
     function(f) return 4 + f * 10 end,
     function(value) S.strafeRadius = value end,
@@ -918,7 +1093,7 @@ ExtraUI.setVoidDepth = slider(SettingsPage, "\086\079\073\068\032\068\069\080\08
 ExtraUI.setUiScale = slider(SettingsPage, "\073\078\084\069\082\070\065\067\069\032\083\067\065\076\069", 349, (S.uiScale - 0.7) / 0.5,
     function(f) return 0.7 + f * 0.5 end,
     function(value) S.uiScale = value; MainScale.Scale = value end,
-    function(value) return string.format("%.2f×", value) end)
+    function(value) return string.format("\037\046\050\102\195\151", value) end)
 local ThemeNames = {"\076\073\077\069", "\067\089\065\078", "\086\073\079\076\069\084", "\079\082\065\078\071\069"}
 local ThemeColors = {
     Color3.fromRGB(188, 235, 104), Color3.fromRGB(94, 213, 223),
@@ -997,7 +1172,7 @@ ExtraUI.GameplayPage = ExtraUI.groupedPage({{"\083\085\082\086\073\086\065\076\0
 ExtraUI.VisualsPage = ExtraUI.groupedPage({{"\080\076\065\089\069\082\032\069\083\080", ExtraUI.EspPage},
     {"\078\079\084\073\070\073\067\065\084\073\079\078\083", ExtraUI.NotifyPage}})
 ExtraUI.OptionsPage = ExtraUI.groupedPage({{"\077\079\086\069\077\069\078\084\032\038\032\065\080\080\069\065\082\065\078\067\069", SettingsPage},
-    {"\080\082\079\070\073\076\069\083\032\038\032\077\065\067\082\079", ExtraUI.ConfigPage}})
+    {"\080\082\079\070\073\076\069\083\032\038\032\070\080\083\032\083\072\065\082\069", ExtraUI.ConfigPage}})
 ExtraUI.PageViews = {targets = TargetsPage, combat = ExtraUI.CombatPage,
     gameplay = ExtraUI.GameplayPage, visuals = ExtraUI.VisualsPage,
     options = ExtraUI.OptionsPage}
@@ -1117,7 +1292,7 @@ local RapidLast = setmetatable({}, {__mode = "\107"})
 local ReloadLast = setmetatable({}, {__mode = "\107"})
 local GunRows = {}
 local GunRowCount = 0
-
+ 
 local FixedPace = {
     ["\091\082\101\118\111\108\118\101\114\093"] = 0.01,
     ["\091\068\111\117\098\108\101\045\066\097\114\114\101\108\032\083\071\093"] = 0.01,
@@ -1159,8 +1334,8 @@ end
 Rapid.getPace = function(tool)
     return 0.01
 end
-
-
+ 
+ 
 Rapid.lastShotAt = function(tool)
     return RapidLast[tool] or 0
 end
@@ -1316,8 +1491,8 @@ do
                         }
                         ShotVisualOriginal[manager] = originals
                     end
-                    
-                    
+                     
+                     
                     manager.BulletTrails = function(_, bullet)
                         if typeof(bullet) ~= "\073\110\115\116\097\110\099\101" then return end
                         if bullet:IsA("\066\097\115\101\080\097\114\116") then
@@ -1711,7 +1886,7 @@ do
                             o.box.Position = Vector2.new(centerX - width * 0.5, top.Y)
                             o.box.Size = Vector2.new(width, height)
                             o.box.Visible = selected or S.esp.boxes
-                            o.name.Text = selected and ("◆  " .. player.DisplayName .. "  ◆")
+                            o.name.Text = selected and ("\226\151\134\032\032" .. player.DisplayName .. "\032\032\226\151\134")
                                 or player.DisplayName
                             o.name.Position = Vector2.new(centerX, top.Y - 18)
                             o.name.Visible = not selected and S.esp.enabled and S.esp.names
@@ -1813,7 +1988,7 @@ local function updateOwnRoot()
     OwnRoot = c and c:FindFirstChild("\072\117\109\097\110\111\105\100\082\111\111\116\080\097\114\116", true) or nil
 end
 
-
+ 
 local function refreshArmorShops()
     table.clear(ArmorShops)
     local store = Workspace:FindFirstChild("\083\116\111\114\101")
@@ -1852,7 +2027,7 @@ ExtraUI.clickShop = function(click, head)
     if ExtraUI.Capabilities.clickDetector then
         return pcall(fireclickdetector, click, 0, "\109\111\117\115\101\099\108\105\099\107")
     end
-    
+     
     local camera = Workspace.CurrentCamera
     if not camera or not head then return false end
     local oldCamera = camera.CFrame
@@ -2064,8 +2239,8 @@ local function ownDangerReason(character)
     end
     return nil
 end
-
-
+ 
+ 
 ExtraUI.confirmAntiStompReset = function(character, signal)
     if S.resetCharacter ~= character then return end
     S.antiStompConfirmedCharacter = character
@@ -2113,15 +2288,15 @@ local function resetBeforeStomp(character, reason)
         while not S.closed and S.antiStomp and S.resetGeneration == generation
             and S.resetCharacter == character and Me.Character == character do
             task.wait(1.25)
-            
-            
+             
+             
             if S.closed or not S.antiStomp or S.resetGeneration ~= generation
                 or S.resetCharacter ~= character or Me.Character ~= character
                 or not character.Parent then break end
             local currentHum = character:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
             if not currentHum then break end
             if not ownDangerReason(character) and currentHum.Health > 0 then
-                
+                 
                 S.resetInFlight = false
                 S.resetCharacter = nil
                 S.antiStompReady = true
@@ -2143,43 +2318,14 @@ local function resetBeforeStomp(character, reason)
     end)
 end
 local OwnCharacterGeneration = 0
-ExtraUI.ensureMacro = function(character)
-    if not S.macroLock or S.closed or Me.Character ~= character then return end
-    local enabled = ExtraUI.macroEnabled
-    if not enabled or not enabled.Parent then return end
-    local battle = ReplicatedStorage:FindFirstChild("\083\116\111\114\097\103\101")
-    battle = battle and battle:FindFirstChild("\071\097\109\101\086\097\108\117\101\115")
-    battle = battle and battle:FindFirstChild("\066\097\116\116\108\101\082\111\121\097\108\101")
-    if Me:GetAttribute("\068\117\101\108\078\111\077\097\099\114\111") or (battle and battle.Value) then return end
-    if not enabled.Value then pcall(function() enabled.Value = true end) end
-end
 local function watchOwnCharacter(character)
     disconnectMany(OwnCharacterConnections)
-    ExtraUI.macroEnabled = nil
     OwnCharacterConnections[#OwnCharacterConnections + 1] =
         character.ChildAdded:Connect(Rapid.observeGun)
     for _, tool in ipairs(character:GetChildren()) do Rapid.observeGun(tool) end
     task.spawn(function()
         local scripts = character:WaitForChild("\083\099\114\105\112\116\115", 12)
         local input = scripts and scripts:WaitForChild("\073\110\112\117\116", 12)
-        local macro = input and (input:FindFirstChild("\082\101\097\108\077\097\099\114\111\073\110\112\117\116")
-            or input:FindFirstChild("\077\097\099\114\111\073\110\112\117\116")
-            or input:WaitForChild("\082\101\097\108\077\097\099\114\111\073\110\112\117\116", 3))
-        local enabled = macro and (macro:FindFirstChild("\069\110\097\098\108\101\100")
-            or macro:WaitForChild("\069\110\097\098\108\101\100", 3))
-        if enabled and enabled:IsA("\066\111\111\108\086\097\108\117\101") and not S.closed
-            and Me.Character == character then
-            ExtraUI.macroEnabled = enabled
-            OwnCharacterConnections[#OwnCharacterConnections + 1] =
-                enabled:GetPropertyChangedSignal("\086\097\108\117\101"):Connect(function()
-                    if S.macroLock and not enabled.Value then
-                        task.delay(0.08, function()
-                            ExtraUI.ensureMacro(character)
-                        end)
-                    end
-                end)
-            ExtraUI.ensureMacro(character)
-        end
         local aiming = input and input:WaitForChild("\065\105\109\105\110\103\073\110\112\117\116", 12)
         if aiming and not S.closed and Me.Character == character then
             ExtraUI.applyGunMods(character)
@@ -2187,7 +2333,7 @@ local function watchOwnCharacter(character)
     end)
     OwnCharacterGeneration = OwnCharacterGeneration + 1
     local generation = OwnCharacterGeneration
-    
+     
     if ExtraUI.lastAntiStompModel ~= character then
         local previousModel = ExtraUI.lastAntiStompModel
         local hadPendingReset = S.resetInFlight
@@ -2212,9 +2358,9 @@ local function watchOwnCharacter(character)
             if not hum or S.resetInFlight then return end
             if not S.antiStompReady then
                 if os.clock() < S.antiStompSpawnGraceUntil then return end
-                
-                
-                
+                 
+                 
+                 
                 if ExtraUI.antiStompInitialModel ~= character and
                     (hum.Health <= ResetThresholds[S.resetThresholdIndex] + 5
                         or ownDangerReason(character)) then return end
@@ -2263,23 +2409,15 @@ local function watchOwnCharacter(character)
             OwnCharacterConnections[#OwnCharacterConnections + 1] = effects.ChildAdded:Connect(watchFlag)
         end
         evaluate()
-        
+         
         task.delay(1.55, function()
             if not S.closed and Me.Character == character
                 and generation == OwnCharacterGeneration then evaluate() end
         end)
     end)
 end
-bind(ExtraUI.MacroBtn.MouseButton1Click:Connect(function()
-    S.macroLock = not S.macroLock
-    style(ExtraUI.MacroBtn, S.macroLock,
-        "\077\065\067\082\079\032\080\069\082\083\073\083\084\058\032\079\078", "\077\065\067\082\079\032\080\069\082\083\073\083\084\058\032\079\070\070")
-    if S.macroLock then ExtraUI.ensureMacro(Me.Character) end
-    say(S.macroLock and "\077\097\099\114\111\032\112\101\114\115\105\115\116\032\101\110\097\098\108\101\100\046" or "\077\097\099\114\111\032\112\101\114\115\105\115\116\032\100\105\115\097\098\108\101\100\046")
-end))
-
-
-
+ 
+ 
 local function downedPlayerBelow(character)
     local lower = character:FindFirstChild("\076\111\119\101\114\084\111\114\115\111")
     local upper = character:FindFirstChild("\085\112\112\101\114\084\111\114\115\111")
@@ -2400,7 +2538,7 @@ bind(Me.CharacterAdded:Connect(function(character)
         ExtraUI.Notify.emit("\111\119\110\082\101\115\112\097\119\110", "\089\111\117\032\114\101\115\112\097\119\110\101\100")
     end
     ExtraUI.Notify.previousOwnCharacter = character
-    
+     
     task.delay(0.25, function() if not S.closed then updateOwnRoot() end end)
     watchOwnCharacter(character)
     ExtraUI.runSpawnSequence(character)
@@ -2479,7 +2617,7 @@ local function partFor(rec)
     return rec.root
 end
 local function predictedPoint(rec, part, lead)
-    
+     
     return part.Position + rec.root.AssemblyLinearVelocity * lead
 end
 local function isFolder(parent)
@@ -2507,8 +2645,8 @@ local Hook: any = {
 }
 Env.__SPECTRA_MULTI_RAYCAST = Hook
 
-
-
+ 
+ 
 Hook.getMuzzle = function(tool)
     local handle = tool and tool:FindFirstChild("\072\097\110\100\108\101")
     if not handle or not handle:IsA("\066\097\115\101\080\097\114\116") then return nil end
@@ -2527,7 +2665,7 @@ Hook.getBulletDirection = function()
     if not basis then return nil end
     local angle
     if S.bulletMode == 2 then
-        
+         
         angle = (S.bulletStep % 16) * (2 * math.pi / 16)
         S.bulletStep = S.bulletStep + 1
     elseif S.bulletMode == 3 then
@@ -2540,10 +2678,10 @@ Hook.getBulletDirection = function()
     return radial.Magnitude > 0.001 and radial.Unit or nil
 end
 
-
-
-
-
+ 
+ 
+ 
+ 
 Hook.rayBoxDistance = function(origin, direction, length, part, padding)
     local localOrigin = part.CFrame:PointToObjectSpace(origin)
     local localDirection = part.CFrame:VectorToObjectSpace(direction)
@@ -2573,8 +2711,8 @@ end
 Hook.resolveShotRecord = function(p)
     local rec = validModel(p.Character) or validModel(candidateNamed(Workspace, p))
     if rec then return rec end
-    
-    
+     
+     
     for folder in pairs(Folders) do
         if folder.Parent == Workspace then
             rec = validModel(candidateNamed(folder, p))
@@ -2588,9 +2726,9 @@ Hook.penetrationRaycast = function(origin, point, maxRange, cameraAim)
     if typeof(origin) ~= "\086\101\099\116\111\114\051" or typeof(point) ~= "\086\101\099\116\111\114\051" then
         return nil, nil
     end
-    
-    
-    
+     
+     
+     
     local rayOrigin = cameraAim and Workspace.CurrentCamera
         and Workspace.CurrentCamera.CFrame.Position or origin
     local delta = point - rayOrigin
@@ -2599,8 +2737,8 @@ Hook.penetrationRaycast = function(origin, point, maxRange, cameraAim)
     local direction = delta.Unit
     local bestDistance, bestPart, bestPlayer = length + 1, nil, nil
     local selectedDistance, selectedPart, selectedPlayer = nil, nil, nil
-    
-    
+     
+     
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= Me then
             local rec = Hook.resolveShotRecord(p)
@@ -2612,9 +2750,9 @@ Hook.penetrationRaycast = function(origin, point, maxRange, cameraAim)
                     if separation < 8 then
                         for _, body in ipairs(rec.model:GetChildren()) do
                             if body:IsA("\066\097\115\101\080\097\114\116") and body ~= rec.root then
-                                
-                                
-                                
+                                 
+                                 
+                                 
                                 local padding = cameraAim and math.min(4,
                                     math.max(0.35, along * 0.03)) or 0
                                 local distance = Hook.rayBoxDistance(rayOrigin, direction,
@@ -2635,8 +2773,8 @@ Hook.penetrationRaycast = function(origin, point, maxRange, cameraAim)
             end
         end
     end
-    
-    
+     
+     
     if selectedPart then
         bestDistance, bestPart, bestPlayer =
             selectedDistance, selectedPart, selectedPlayer
@@ -2651,8 +2789,8 @@ Hook.penetrationRaycast = function(origin, point, maxRange, cameraAim)
     }, bestPlayer
 end
 
-
-
+ 
+ 
 Hook.nextMultiShot = function()
     local count = #TargetList
     if count == 0 then return nil, nil, nil end
@@ -2661,7 +2799,7 @@ Hook.nextMultiShot = function()
         local target = TargetList[Hook.multiCursor]
         local rec = Records[target]
         if not recordPresent(target, rec) then
-            
+             
             rec = Hook.resolveShotRecord(target)
             if rec and TargetSet[target] then Records[target] = rec end
         end
@@ -2738,8 +2876,8 @@ local function installRaycastHook()
             local origin = Hook.getMuzzle(tool)
             local direct = S.autoKill or S.aura or S.forceHit
 
-            
-            
+             
+             
             if not direct and S.bulletMode ~= 1 and origin then
                 local radial = Hook.getBulletDirection()
                 if radial then mousePoint = origin + radial * maxRange end
@@ -2753,7 +2891,7 @@ local function installRaycastHook()
                     or forcedPlayer and Records[forcedPlayer] or Hook.record
                 local part = (lockedPlayer or forcedPlayer)
                     and selectedRecord and partFor(selectedRecord) or Hook.part
-                
+                 
                 if S.multi and not S.autoKill and not S.aura
                     and (S.silent or S.forceHit) then
                     selectedPlayer, selectedRecord, part = Hook.nextMultiShot()
@@ -2787,8 +2925,8 @@ local function installRaycastHook()
                 end
             end
 
-            
-            
+             
+             
             if S.wallBang then
                 Hook.wallShots = (Hook.wallShots or 0) + 1
                 local hit, victim
@@ -2806,8 +2944,8 @@ local function installRaycastHook()
                     ExtraUI.WallBangInfo.Text = ("\087\066\032\083\072\079\084\083\058\032\037\100\032\124\032\110\111\032\114\105\103\032\111\110\032\115\104\111\116\032\108\105\110\101")
                         :format(Hook.wallShots)
                 end
-                
-                
+                 
+                 
             end
         end
         return original(self, tool, mousePoint, player, shotRange, ...)
@@ -2872,7 +3010,7 @@ local function clearTarget()
     S.aimPlayer, S.aimRecord = nil, nil
     S.screenDistance2, S.permitted = math.huge, false
     Hook.part, Hook.record = nil, nil
-    Hook.enabled = false 
+    Hook.enabled = false  
     if ActiveLabel.Text ~= "\065\105\109\032\116\097\114\103\101\116\058\032\110\111\110\101" then ActiveLabel.Text = "\065\105\109\032\116\097\114\103\101\116\058\032\110\111\110\101" end
 end
 local function stopBring()
@@ -2906,8 +3044,8 @@ local function applyRecord(p, rec)
     ExtraUI.Notify.attach(p, rec)
 end
 local function findRecordInWorkspace(p, token)
-    
-    
+     
+     
     local rec = validModel(p.Character)
     if not rec then rec = validModel(candidateNamed(Workspace, p)) end
     if rec then return rec end
@@ -2937,8 +3075,8 @@ local function requestResolution(p)
             if attempt == 1 then task.wait(0.22)
             elseif attempt == 2 then task.wait(0.70) end
         end
-        
-        
+         
+         
         applyRecord(p, nil)
     end)
 end
@@ -2948,8 +3086,8 @@ local function watchFolder(folder)
         local p = TargetByModelName[child.Name]
         if p then requestResolution(p) end
     end)
-    
-    
+     
+     
     for i = 1, #TargetList do
         local p = TargetList[i]
         if not recordPresent(p, Records[p]) and candidateNamed(folder, p) then
@@ -2966,7 +3104,7 @@ local function unwatchFolder(folder)
         if rec and rec.model.Parent == folder then invalidatePlayer(p) end
     end
 end
-
+ 
 for _, child in ipairs(Workspace:GetChildren()) do watchFolder(child) end
 bind(Workspace.ChildAdded:Connect(function(child)
     if isFolder(child) then watchFolder(child) end
@@ -2980,7 +3118,7 @@ local function deselectPlayer(p)
     TargetSet[p] = nil
     TargetByModelName[p.Name] = nil
     TargetByModelName[tostring(p.UserId)] = nil
-    ResolutionTokens[p] = nil 
+    ResolutionTokens[p] = nil  
     local cs = PlayerConnections[p]
     if cs then disconnectMany(cs); PlayerConnections[p] = nil end
     for i = #TargetList, 1, -1 do
@@ -3039,11 +3177,11 @@ local function choosePlayer(p, knownRecord)
             syncLabels()
             return
         end
-        
+         
         for i = #TargetList, 1, -1 do deselectPlayer(TargetList[i]) end
         if p and addTarget(p, knownRecord) then S.primary = p end
     else
-        
+         
         if p then
             if TargetSet[p] then deselectPlayer(p)
             elseif addTarget(p, knownRecord) then S.primary = p end
@@ -3066,8 +3204,8 @@ local function pickNearCursor()
     local radius = 100
     local bestPlayer, bestRecord, bestDistance2 = nil, nil, radius * radius
     local ownFolder = Me.Character and Me.Character.Parent
-    
-    
+     
+     
     local folderChecks = 0
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= Me then
@@ -3116,7 +3254,7 @@ local function pickNearCursor()
         say("\067\117\114\115\111\114\032\112\105\099\107\058\032\064" .. bestPlayer.Name .. "\032\117\110\115\101\108\101\099\116\101\100\046")
         return
     end
-    
+     
     if not S.dot then
         S.dot = true
         style(DotBtn, true, "\066\079\088\032\043\032\076\073\078\069\058\032\079\078", "\066\079\088\032\043\032\076\073\078\069\058\032\079\070\070")
@@ -3131,12 +3269,12 @@ local function pickNearCursor()
         choosePlayer(bestPlayer, bestRecord)
     end
     if not RenderConnection then updateLoops() end
-    
+     
     targetTick()
     say("\067\117\114\115\111\114\032\112\105\099\107\058\032\064" .. bestPlayer.Name .. "\032\115\101\108\101\099\116\101\100\046")
 end
 
-
+ 
 local function filterRows()
     local query = Search.Text:lower()
     for p, row in pairs(Rows) do
@@ -3243,7 +3381,7 @@ targetTick = function()
                     local dx, dy = projected.X - cx, projected.Y - cy
                     local distance2 = dx * dx + dy * dy
                     do
-                        
+                         
                         local score = distance2 * (S.aimPlayer == p and 0.78 or 1)
                         if score < firstScore then
                             secondP, secondRec, secondPart, secondPoint, secondScore =
@@ -3259,15 +3397,15 @@ targetTick = function()
             end
         end
     end
-    
+     
     local p, rec, part, projected
     if firstRec and withinWallLine(cam, firstPart, firstRec) then
         p, rec, part, projected = firstP, firstRec, firstPart, firstPoint
     elseif secondRec and withinWallLine(cam, secondPart, secondRec) then
         p, rec, part, projected = secondP, secondRec, secondPart, secondPoint
     end
-    
-    
+     
+     
     if not rec and (S.silent or S.forceHit) then
         local selected = S.primary
         local selectedRecord = selected and Records[selected]
@@ -3311,7 +3449,7 @@ local function clickMouse()
         end)
         return true
     end
-    
+     
     local character = Me.Character
     local equipped = character and character:FindFirstChildOfClass("\084\111\111\108")
     if equipped and equipped:FindFirstChild("\082\101\115\112\111\110\115\101") then
@@ -3344,8 +3482,8 @@ local function triggerTick()
     end
 end
 
-
-    
+ 
+     
 updateLoops = function()
     local needTarget = #TargetList > 0 and (S.silent or S.forceHit
         or S.trigger or S.cameraAim or S.dot)
@@ -3362,7 +3500,7 @@ updateLoops = function()
     else
         clearTarget()
     end
-    
+     
     if S.cameraAim and #TargetList > 0 and not RenderConnection then
         RenderConnection = RunService.RenderStepped:Connect(function(dt)
             local rec = S.aimRecord
@@ -3383,7 +3521,7 @@ updateLoops = function()
     end
 end
 
-
+ 
 ExtraUI.selectAllTargets = function()
     if not S.multi then S.multi = true end
     for _, player in ipairs(Players:GetPlayers()) do
@@ -3581,7 +3719,7 @@ bind(AntiStompBtn.MouseButton1Click:Connect(function()
         say("\065\110\116\105\032\115\116\111\109\112\032\097\114\109\101\100\058\032\114\101\115\101\116\032\114\101\116\114\105\101\115\032\115\116\111\112\032\111\110\032\099\111\110\102\105\114\109\101\100\032\100\101\097\116\104\032\111\114\032\114\101\115\112\097\119\110\046")
         resetBeforeStomp(Me.Character, ownDangerReason(Me.Character))
     else
-        
+         
         S.resetGeneration = S.resetGeneration + 1
         S.resetCharacter = nil
         S.resetInFlight = false
@@ -3828,9 +3966,9 @@ local function restoreBringStompWhenClear(target)
         end
     end)
 end
-
-
-
+ 
+ 
+ 
 ExtraUI.standSendChat = function(message)
     if S.closed then return false end
     local chat = game:GetService("\084\101\120\116\067\104\097\116\083\101\114\118\105\099\101")
@@ -3840,7 +3978,7 @@ ExtraUI.standSendChat = function(message)
         local ok = pcall(function() general:SendAsync(message) end)
         if ok then return true end
     end
-    
+     
     local legacy = ReplicatedStorage:FindFirstChild("\068\101\102\097\117\108\116\067\104\097\116\083\121\115\116\101\109\067\104\097\116\069\118\101\110\116\115")
     local remote = legacy and legacy:FindFirstChild("\083\097\121\077\101\115\115\097\103\101\082\101\113\117\101\115\116")
     if remote and remote:IsA("\082\101\109\111\116\101\069\118\101\110\116") then
@@ -3866,7 +4004,7 @@ ExtraUI.standReportResult = function(report, outcome, detail)
             if model then S.standCounterReportedDown[report.target] = model end
         end
     end
-    
+     
     local message = ({
         SUCCESS = "\115\117\099\099\101\115\115",
         FAILED = "\102\097\105\108\101\100",
@@ -3982,7 +4120,7 @@ local function stopAutoKill(message, keepStompPaused)
         S.standAttack2FinisherPlayed = false
         S.standAttack2LaunchQueued = false
         if ExtraUI.standEndCinematic then ExtraUI.standEndCinematic() end
-        
+         
         style(ForceHitBtn, S.forceHit, "\070\079\082\067\069\032\072\073\084\058\032\079\078", "\070\079\082\067\069\032\072\073\084\058\032\079\070\070")
         S.quietAutoKill = S.standPreviousQuiet
         S.autoKillVoid = S.standPreviousVoid
@@ -3990,7 +4128,7 @@ local function stopAutoKill(message, keepStompPaused)
             "\065\085\084\079\032\075\073\076\076\032\086\079\073\068\032\066\076\073\078\075\058\032\079\078", "\065\085\084\079\032\075\073\076\076\032\086\079\073\068\032\066\076\073\078\075\058\032\079\070\070")
         style(ExtraUI.QuietKillBtn, S.quietAutoKill,
             "\081\085\073\069\084\032\065\085\084\079\032\075\073\076\076\058\032\079\078", "\081\085\073\069\084\032\065\085\084\079\032\075\073\076\076\058\032\079\070\070")
-        
+         
         S.rapidWeapons["\091\082\101\118\111\108\118\101\114\093"] = S.standRevolverRapidBefore or nil
         S.standRevolverRapidBefore = nil
         S.standEnabledRapid = nil
@@ -4001,7 +4139,7 @@ local function stopAutoKill(message, keepStompPaused)
             style(Rapid.rows["\091\082\101\118\111\108\118\101\114\093"], S.rapidWeapons["\091\082\101\118\111\108\118\101\114\093"],
                 "\091\082\101\118\111\108\118\101\114\093\032\032\047\032\032\079\078", "\091\082\101\118\111\108\118\101\114\093\032\032\047\032\032\079\070\070")
         end
-        
+         
         if updateLoops then updateLoops() end
         if returnToOwner and ExtraUI.standOwnerRoot then
             local character = Me.Character
@@ -4036,15 +4174,15 @@ local function stopAutoKill(message, keepStompPaused)
     if not S.silent and not S.wallBang and not S.forceHit then Hook.enabled = false end
     if message then say(message) end
 end
-
-
+ 
+ 
 ExtraUI.safeBringLanding = function(destination, character)
     if typeof(destination) ~= "\067\070\114\097\109\101" or destination.Position.Y < -28 then
         return nil, "\100\101\115\116\105\110\097\116\105\111\110\032\105\115\032\098\101\108\111\119\032\116\104\101\032\115\097\102\101\032\109\097\112\032\104\101\105\103\104\116"
     end
     local exclude = {character}
-    
-    
+     
+     
     local params = OverlapParams.new()
     params.FilterType = Enum.RaycastFilterType.Exclude
     params.FilterDescendantsInstances = exclude
@@ -4072,7 +4210,7 @@ ExtraUI.safeBringLanding = function(destination, character)
             end
         end
         if not blocked then
-            
+             
             local floor = Workspace:Raycast(candidate.Position + Vector3.new(0, 1, 0),
                 Vector3.new(0, -12, 0), floorParams)
             if floor and floor.Instance.CanCollide and floor.Normal.Y > 0.5 then
@@ -4276,7 +4414,7 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                     if targetLower and main and not (attacking and attacking.Value) then
                         pcall(function() hum:UnequipTools() end)
                         pcall(function()
-                            
+                             
                             local away = root.Position - targetLower.Position
                             away = Vector3.new(away.X, 0, away.Z)
                             if away.Magnitude < 0.1 then
@@ -4305,7 +4443,7 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                             and S.autoKill and generation == S.autoKillGeneration
                             and Me.Character == character do task.wait(0.04) end
                         if character:FindFirstChild("\071\082\065\066\066\073\078\071\095\067\079\078\083\084\082\065\073\078\084") then
-                            
+                             
                             local latestOwnerRoot = followOwner and ExtraUI.standOwnerRoot()
                             if latestOwnerRoot then destination = latestOwnerRoot.CFrame end
                             local landing, problem = ExtraUI.safeBringLanding(destination, character)
@@ -4332,7 +4470,7 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                                 pcall(function() main:FireServer("\071\114\097\098\098\105\110\103") end)
                                 task.wait(0.2)
                             end
-                            
+                             
                             pcall(function()
                                 root.AssemblyLinearVelocity = Vector3.zero
                                 root.AssemblyAngularVelocity = Vector3.zero
@@ -4492,7 +4630,7 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                     and not S.standDrivebyTarget
                     and not S.standAmbushTarget
                     and not S.standSnipeTarget then
-                    
+                     
                     local phase = math.floor(elapsed / 0.65) % 4
                     local across = phase == 0 and -12 or phase == 1 and 12
                         or phase == 2 and -5 or 5
@@ -4503,7 +4641,7 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                         rec.root.Position + Vector3.new(0, 1.5, 0))
                 end
                 if S.standAttack4Target == target then
-                    
+                     
                     local phase = math.floor(elapsed / 0.9) % 3
                     local depth = phase == 0 and 20 or phase == 1 and 7 or -6
                     local flank = phase == 2 and 9 or -4
@@ -4514,7 +4652,7 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                         rec.root.Position + Vector3.new(0, 1.5, 0))
                 end
                 if S.standAttack2Target == target then
-                    
+                     
                     local lunge = math.floor(elapsed / 0.48) % 3 == 0 and 13 or 3
                     local approach = rec.root.Position
                         - rec.root.CFrame.LookVector * lunge
@@ -4524,7 +4662,7 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                         rec.root.Position + Vector3.new(0, 1.5, 0))
                 end
                 if S.standAttack5Target == target then
-                    
+                     
                     local helix = elapsed * 5
                     local sweep = Vector3.new(math.sin(helix) * 8,
                         2.5 + (1 + math.sin(helix * 0.7)) * 3,
@@ -4533,7 +4671,7 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                         rec.root.Position + Vector3.new(0, 1.5, 0))
                 end
                 if S.standAmbushTarget == target then
-                    
+                     
                     local side = math.floor(elapsed / 0.32) % 2 == 0 and 1 or -1
                     local peek = rec.root.Position
                         - rec.root.CFrame.LookVector * (elapsed < 1.5 and 10 or 3)
@@ -4569,7 +4707,7 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                     end
                 end
                 if S.standAttack3Target == target then
-                    
+                     
                     local skyHeight = math.max(16, 80 - elapsed * 15)
                     local skyRadius = math.max(18, 90 - elapsed * 14)
                     attackCFrame = CFrame.lookAt(rec.root.Position + Vector3.new(
@@ -4625,8 +4763,8 @@ local function startAutoKill(bringDestination, bringOwner, explicitTarget)
                     task.wait(rapid and 0.02 or 0.045)
                     continue
                 end
-                
-                
+                 
+                 
                 if readyToFire and S.autoKillVoid and not S.killBringDestination then
                     S.voidBlinking = true
                     pcall(function()
@@ -4673,11 +4811,11 @@ ExtraUI.startAttackOne = function(target, downOnly, variant, independent)
     S.standRevolverRapidBefore = S.rapidWeapons["\091\082\101\118\111\108\118\101\114\093"] == true
     S.standPreviousQuiet = S.quietAutoKill
     S.standPreviousVoid = S.autoKillVoid
-    
-    
+     
+     
     S.standEnabledRapid = not S.rapidWeapons["\091\082\101\118\111\108\118\101\114\093"]
-    
-    
+     
+     
     S.quietAutoKill = false
     S.autoKillVoid = false
     S.rapidWeapons["\091\082\101\118\111\108\118\101\114\093"] = true
@@ -4912,8 +5050,8 @@ local function attachJumpBypass(character)
     task.spawn(function()
         local hum = character and character:WaitForChild("\072\117\109\097\110\111\105\100", 5)
         if not hum then return end
-        
-        
+         
+         
         for _ = 1, 40 do
             if S.closed or not S.jumpBypass or generation ~= S.jumpBypassGeneration
                 or Me.Character ~= character then return end
@@ -4940,10 +5078,10 @@ local function attachJumpBypass(character)
             end
             if flags then
                 flags.NoJumping = false
-                
-                
-                
-                
+                 
+                 
+                 
+                 
                 ExtraUI.jumpBypassInputConnection = UIS.JumpRequest:Connect(function()
                     if S.closed or not S.jumpBypass
                         or generation ~= S.jumpBypassGeneration
@@ -5067,6 +5205,14 @@ end
 ExtraUI.standCancelFling = function()
     S.standFlingGeneration = S.standFlingGeneration + 1
     S.standFlinging = false
+    if S.standFlingTargetHumanoid and S.standFlingTargetHumanoid.Parent then
+        pcall(function()
+            S.standFlingTargetHumanoid.PlatformStand =
+                S.standFlingTargetPlatformBefore or false
+        end)
+    end
+    S.standFlingTargetHumanoid = nil
+    S.standFlingTargetPlatformBefore = nil
     if S.standFlingMover then
         pcall(function() S.standFlingMover:Destroy() end)
         S.standFlingMover = nil
@@ -5363,7 +5509,7 @@ ExtraUI.standLaunchTarget = function(target)
                 targetRoot.AssemblyMass * 350, 0))
         end)
     else
-        
+         
         task.spawn(function()
             for _ = 1, 18 do
                 if S.closed or not model.Parent then return end
@@ -5782,269 +5928,215 @@ ExtraUI.standRememberOrder = function(sender, command, argument)
 end
 ExtraUI.standStartFling = function(target)
     ExtraUI.standStop()
-    if target and (target == Me or target.Parent ~= Players) then
-        ExtraUI.standStatus("\070\108\105\110\103\032\116\097\114\103\101\116\032\105\115\032\117\110\097\118\097\105\108\097\098\108\101\046")
-        return
-    end
     local character = Me.Character
     local root = character and character:FindFirstChild("\072\117\109\097\110\111\105\100\082\111\111\116\080\097\114\116")
     local hum = character and character:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
-    if not root or not hum or hum.Health <= 0 or root.Anchored then
-        ExtraUI.standStatus("\070\108\105\110\103\032\110\101\101\100\115\032\097\032\108\105\118\101\044\032\117\110\097\110\099\104\111\114\101\100\032\099\104\097\114\097\099\116\101\114\046")
-        return
-    end
     local targetRoot = target and ExtraUI.standTargetRoot(target)
-    if target and (not targetRoot or targetRoot.Anchored) then
-        ExtraUI.standStatus("\084\097\114\103\101\116\032\114\105\103\032\109\105\115\115\105\110\103\032\111\114\032\097\110\099\104\111\114\101\100\059\032\099\097\110\110\111\116\032\102\108\105\110\103\046")
+    if not root or not hum or hum.Health <= 0 or (target and not targetRoot) then
+        ExtraUI.standStatus("\070\108\105\110\103\032\110\101\101\100\115\032\097\032\108\105\118\101\032\099\104\097\114\097\099\116\101\114\032\097\110\100\032\116\097\114\103\101\116\032\114\105\103\046")
         return
     end
-
-    local originalPivot = character:GetPivot()
+    local originalCFrame = character:GetPivot()
+    local originalCollision = root.CanCollide
     local originalAutoRotate = hum.AutoRotate
-    local originalPlatformStand = hum.PlatformStand
-    local originalCollisions, originalTouch = {}, {}
-    local restorePhysics = {}
-    local touchConnections = {}
-    local touchedTarget = 0
-    local impactParts = {}
-    local impactNames = {
-        HumanoidRootPart = true, Torso = true, UpperTorso = true,
-        LowerTorso = true, LeftUpperArm = true, RightUpperArm = true,
-        LeftArm = true, RightArm = true,
-    }
-    for _, obj in ipairs(character:GetDescendants()) do
-        if obj:IsA("\066\097\115\101\080\097\114\116") and impactNames[obj.Name] then
-            originalCollisions[obj] = obj.CanCollide
-            originalTouch[obj] = obj.CanTouch
-            table.insert(impactParts, obj)
-            if obj == root or obj.Name == "\084\111\114\115\111" or obj.Name == "\085\112\112\101\114\084\111\114\115\111" then
-                restorePhysics[obj] = {obj.CustomPhysicalProperties}
-            end
-        end
-    end
-
     S.standFlingRestore = function()
-        for _, connection in ipairs(touchConnections) do
-            pcall(function() connection:Disconnect() end)
-        end
-        table.clear(touchConnections)
-        if S.standFlingMover then
-            pcall(function() S.standFlingMover:Destroy() end)
-            S.standFlingMover = nil
-        end
-        for part, old in pairs(originalCollisions) do
-            if part.Parent then pcall(function() part.CanCollide = old end) end
-        end
-        for part, old in pairs(originalTouch) do
-            if part.Parent then pcall(function() part.CanTouch = old end) end
-        end
-        for part, old in pairs(restorePhysics) do
-            if part.Parent then
-                pcall(function() part.CustomPhysicalProperties = old[1] end)
-            end
-        end
         if root.Parent then
+            root.CanCollide = originalCollision
             root.AssemblyAngularVelocity = Vector3.zero
             root.AssemblyLinearVelocity = Vector3.zero
         end
-        if hum.Parent then
-            hum.PlatformStand = originalPlatformStand
-            hum.AutoRotate = originalAutoRotate
-            if not originalPlatformStand and hum.Health > 0 then
-                pcall(function() hum:ChangeState(Enum.HumanoidStateType.GettingUp) end)
-            end
-        end
+        if hum.Parent then hum.AutoRotate = originalAutoRotate end
         if Me.Character == character and hum.Health > 0 and not S.resetInFlight then
-            local landing = ExtraUI.safeBringLanding
-                and ExtraUI.safeBringLanding(originalPivot, character)
-            if not landing and originalPivot.Position.Y >= -28 then
-                landing = originalPivot
-            end
-            if landing then pcall(function() character:PivotTo(landing) end) end
+            character:PivotTo(originalCFrame)
         end
     end
-
     S.standFlinging = true
     S.standFlingGeneration = S.standFlingGeneration + 1
     local generation = S.standFlingGeneration
-    local function running()
-        return not S.closed and S.standEnabled and S.standFlinging
-            and generation == S.standFlingGeneration
-            and Me.Character == character and root.Parent ~= nil
-            and hum.Parent ~= nil and hum.Health > 0
-            and (not target or target.Parent == Players)
-    end
-    local ownsLocal = true
-    if type(isnetworkowner) == "\102\117\110\099\116\105\111\110" then
-        local ok, result = pcall(isnetworkowner, root)
-        if ok then ownsLocal = result end
-    end
-    if not ownsLocal then
-        ExtraUI.standCancelFling()
-        ExtraUI.standStatus("\070\108\105\110\103\032\117\110\097\118\097\105\108\097\098\108\101\058\032\121\111\117\114\032\099\104\097\114\097\099\116\101\114\032\112\104\121\115\105\099\115\032\105\115\032\110\111\116\032\108\111\099\097\108\108\121\032\111\119\110\101\100\046")
-        return
-    end
-
-    ExtraUI.standStatus(target and ("\070\108\105\110\103\032\047\032\064" .. target.Name .. "\032\047\032\112\114\101\112\097\114\105\110\103\032\099\111\110\116\097\099\116")
+    ExtraUI.standStatus(target and ("\070\108\105\110\103\105\110\103\032\064" .. target.Name .. "\046")
         or "\083\112\105\110\110\105\110\103\032\105\110\032\112\108\097\099\101\046")
     task.spawn(function()
-        local attempts, confirmed, reason = 0, false, nil
-        local biggestMove = 0
-        local maxAttempts = target and 4 or 1
-        local maxTotal = target and 12 or 2.4
-        local startTime = os.clock()
+        local attempts = 0
+        local flung = false
         local ok, err = pcall(function()
-            hum.AutoRotate = false
-            hum.PlatformStand = true
-            for _, part in ipairs(impactParts) do
-                if part.Parent then
-                    part.CanCollide = true
-                    part.CanTouch = true
-                end
-            end
-            
-            
-            local weighted = PhysicalProperties.new(70, 0.1, 0.1, 100, 100)
-            for part in pairs(restorePhysics) do
-                if part.Parent then
-                    pcall(function() part.CustomPhysicalProperties = weighted end)
-                end
-            end
-            if target then
-                for _, part in ipairs(impactParts) do
-                    local connection = part.Touched:Connect(function(other)
-                        local tr = ExtraUI.standTargetRoot(target)
-                        local model = tr and tr.Parent
-                        if model and other:IsDescendantOf(model) then
-                            touchedTarget = touchedTarget + 1
-                        end
-                    end)
-                    table.insert(touchConnections, connection)
-                end
-            end
-
-            while running() and attempts < maxAttempts
-                and os.clock() - startTime < maxTotal do
-                attempts = attempts + 1
+            while not S.closed and S.standEnabled and S.standFlinging
+                and generation == S.standFlingGeneration
+                and Me.Character == character and hum.Health > 0
+                and (not target or target.Parent == Players) do
                 local targetPart = target and ExtraUI.standTargetRoot(target)
-                if target and (not targetPart or targetPart.Anchored) then
-                    reason = "\116\097\114\103\101\116\032\099\104\097\114\097\099\116\101\114\032\117\110\097\118\097\105\108\097\098\108\101\032\111\114\032\097\110\099\104\111\114\101\100"
-                    break
-                end
-                local targetModel = targetPart and targetPart.Parent
-                local startPos = targetPart and targetPart.Position
-                local best = 0
-                local passedSince = nil
-                local attemptStart = os.clock()
-                local lastOwnershipCheck = attemptStart
-                local lastPushAt = -math.huge
-                if target then
-                    ExtraUI.standStatus(("\070\108\105\110\103\032\064\037\115\032\047\032\099\111\110\116\097\099\116\032\112\097\115\115\032\037\100\032\111\102\032\037\100")
-                        :format(target.Name, attempts, maxAttempts))
-                end
-                while running() and os.clock() - attemptStart < 2.65 do
-                    
-                    
-                    
-                    RunService.Stepped:Wait()
-                    if not running() then break end
-                    local part = target and ExtraUI.standTargetRoot(target)
-                    if target and (not part or part.Parent ~= targetModel
-                        or part.Anchored) then
-                        reason = "\116\097\114\103\101\116\032\108\101\102\116\044\032\114\101\115\112\097\119\110\101\100\044\032\111\114\032\099\104\097\110\103\101\100\032\114\105\103"
-                        break
+                if target and not targetPart then
+                    ExtraUI.standStatus("\087\097\105\116\105\110\103\032\102\111\114\032\064" .. target.Name .. "\032\116\111\032\114\101\115\112\097\119\110\032\102\111\114\032\102\108\105\110\103\046")
+                    task.wait(0.4)
+                else
+                    attempts = attempts + 1
+                    local started = os.clock()
+                    local launchPosition = targetPart and targetPart.Position
+                    local launchModel = targetPart and targetPart.Parent
+                    local launched = false
+                    local observedDistance = 0
+                    local impactAnnounced = false
+                    local lastProgressAt = started
+                    if target then
+                        ExtraUI.standStatus("\070\108\105\110\103\032\119\105\110\100\117\112\032\047\032\064" .. target.Name
+                            .. "\032\047\032\097\116\116\101\109\112\116\032" .. attempts .. "\046")
+                        if ExtraUI.standPlayEmote then
+                            ExtraUI.standPlayEmote("\066\111\120\105\110\103", 0.55)
+                        end
                     end
-                    if os.clock() - lastOwnershipCheck >= 0.65 then
-                        lastOwnershipCheck = os.clock()
-                        if type(isnetworkowner) == "\102\117\110\099\116\105\111\110" then
-                            local ownsOk, owned = pcall(isnetworkowner, root)
-                            if ownsOk and not owned then
-                                reason = "\108\111\115\116\032\108\111\099\097\108\032\112\104\121\115\105\099\115\032\111\119\110\101\114\115\104\105\112"
-                                break
+                    while not S.closed and S.standEnabled and S.standFlinging
+                        and generation == S.standFlingGeneration
+                        and Me.Character == character and hum.Health > 0
+                        and (target or os.clock() - started < 2.5) do
+                        targetPart = target and ExtraUI.standTargetRoot(target)
+                        if target and not targetPart then break end
+                        if targetPart and targetPart.Parent ~= launchModel then break end
+                        if targetPart and targetPart.Anchored then
+                            if os.clock() - lastProgressAt >= 2 then
+                                lastProgressAt = os.clock()
+                                ExtraUI.standStatus("\070\108\105\110\103\032\119\097\105\116\105\110\103\058\032\116\097\114\103\101\116\032\114\111\111\116\032\105\115\032\097\110\099\104\111\114\101\100\046")
+                            end
+                            task.wait(0.1)
+                            continue
+                        end
+                        local elapsed = os.clock() - started
+                        local impact = not target or elapsed >= 0.45
+                        if target and impact and not impactAnnounced then
+                            impactAnnounced = true
+                            ExtraUI.standStatus("\070\108\105\110\103\032\105\109\112\097\099\116\032\047\032\064" .. target.Name .. "\046")
+                        end
+                        local angle = elapsed * (impact and 44 or 12)
+                        local center = targetPart and targetPart.Position or originalCFrame.Position
+                        local offset = targetPart and Vector3.new(
+                            math.cos(angle) * (impact and 0.55 or 5 - elapsed * 9),
+                            impact and 0.25 or 1.8,
+                            math.sin(angle) * (impact and 0.55 or 5 - elapsed * 9))
+                            or Vector3.zero
+                        root.CanCollide = impact
+                        hum.AutoRotate = false
+                        character:PivotTo(CFrame.new(center + offset)
+                            * CFrame.Angles(0, angle, 0))
+                        root.AssemblyAngularVelocity = Vector3.new(0,
+                            impact and 3000 or 320, 0)
+                        root.AssemblyLinearVelocity = targetPart and impact
+                            and Vector3.new(-math.cos(angle) * 400, 160,
+                                -math.sin(angle) * 400)
+                            or Vector3.new(0, 25, 0)
+                        if targetPart and impact then
+                            local ownerOk, ownsTarget = pcall(isnetworkowner, targetPart)
+                            if ownerOk and ownsTarget then
+                                local targetHum = targetPart.Parent
+                                    and targetPart.Parent:FindFirstChildOfClass("\072\117\109\097\110\111\105\100")
+                                if targetHum and S.standFlingTargetHumanoid ~= targetHum then
+                                    if S.standFlingTargetHumanoid
+                                        and S.standFlingTargetHumanoid.Parent then
+                                        pcall(function()
+                                            S.standFlingTargetHumanoid.PlatformStand =
+                                                S.standFlingTargetPlatformBefore or false
+                                        end)
+                                    end
+                                    S.standFlingTargetHumanoid = targetHum
+                                    S.standFlingTargetPlatformBefore = targetHum.PlatformStand
+                                    pcall(function() targetHum.PlatformStand = true end)
+                                elseif targetHum and not targetHum.PlatformStand then
+                                    pcall(function() targetHum.PlatformStand = true end)
+                                end
+                                local away = targetPart.Position - originalCFrame.Position
+                                away = Vector3.new(away.X, 0, away.Z)
+                                if away.Magnitude < 0.1 then
+                                    away = targetPart.CFrame.LookVector
+                                    away = Vector3.new(away.X, 0, away.Z)
+                                end
+                                if away.Magnitude < 0.1 then away = Vector3.xAxis end
+                                local distanceMoved = (targetPart.Position
+                                    - launchPosition).Magnitude
+                                local turn = distanceMoved < 20
+                                    and math.floor(elapsed / 1.5) % 4 or 0
+                                away = CFrame.Angles(0, turn * math.pi / 2, 0)
+                                    :VectorToWorldSpace(away.Unit)
+                                local velocity = away * 480 + Vector3.new(0, 280, 0)
+                                if not launched then
+                                    local mover = Instance.new("\066\111\100\121\086\101\108\111\099\105\116\121")
+                                    mover.Name = "\083\112\101\099\116\114\097\083\116\097\110\100\070\108\105\110\103"
+                                    mover.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+                                    mover.P = 125000
+                                    mover.Velocity = velocity
+                                    mover.Parent = targetPart
+                                    S.standFlingMover = mover
+                                    launched = true
+                                elseif S.standFlingMover then
+                                    S.standFlingMover.Velocity = velocity
+                                end
+                                targetPart.AssemblyLinearVelocity = velocity
+                                targetPart:ApplyImpulse(velocity * targetPart.AssemblyMass)
+                                local model = targetPart.Parent
+                                if model and model:IsA("\077\111\100\101\108") then
+                                    for _, part in ipairs(model:GetChildren()) do
+                                        if part:IsA("\066\097\115\101\080\097\114\116") and part ~= targetPart
+                                            and not part.Anchored then
+                                            part.AssemblyLinearVelocity = velocity
+                                        end
+                                    end
+                                end
                             end
                         end
-                    end
-                    local elapsed = os.clock() - attemptStart
-                    local angle = elapsed * (44 + attempts * 8) + attempts * 1.5708
-                    local side = Vector3.new(math.cos(angle), 0, math.sin(angle))
-                    local tangent = Vector3.new(-side.Z, 0, side.X)
-                    local phase = math.floor(elapsed * 11) % 4
-                    
-                    
-                    local radius = (phase == 0 or phase == 2) and 2.15 or 0.82
-                    local height = (phase == 2 or phase == 3) and 1.05 or 0.05
-                    local center = part and part.Position or originalPivot.Position
-                    local targetVelocity = part and part.AssemblyLinearVelocity
-                        or Vector3.zero
-                    local predicted = targetVelocity * 0.055
-                    if predicted.Magnitude > 7 then predicted = predicted.Unit * 7 end
-                    local position = center + predicted + side * radius
-                        + Vector3.new(0, height, 0)
-                    local direction = (center + Vector3.new(0, 0.8, 0) - position)
-                    if direction.Magnitude < 0.1 then direction = -side end
-                    direction = direction.Unit
-                    local power = 440 + attempts * 70
-                    character:PivotTo(CFrame.new(position)
-                        * CFrame.Angles(angle * 0.5, angle * 1.6, angle * 0.3))
-                    root.AssemblyAngularVelocity = Vector3.new(
-                        650 + attempts * 80, 1600 + attempts * 350, 520)
-                    root.AssemblyLinearVelocity = direction * power
-                        + tangent * (120 + attempts * 25)
-                        + Vector3.new(0, 95 + attempts * 15, 0)
-                    if part and type(isnetworkowner) == "\102\117\110\099\116\105\111\110"
-                        and os.clock() - lastPushAt > 0.35 then
-                        lastPushAt = os.clock()
-                        local ownershipOk, ownsPart = pcall(isnetworkowner, part)
-                        if ownershipOk and ownsPart then
-                            local impulse = (-side * 340 + Vector3.new(0, 160, 0))
-                                * part.AssemblyMass
-                            pcall(function() part:ApplyImpulse(impulse) end)
-                        end
-                    end
-                    RunService.Heartbeat:Wait()
-                    if target and part and part.Parent == targetModel and startPos then
-                        local moved = (part.Position - startPos).Magnitude
-                        best = math.max(best, moved)
-                        biggestMove = math.max(biggestMove, moved)
-                        local speed = part.AssemblyLinearVelocity.Magnitude
-                        
-                        
-                        if (moved >= 125 and speed >= 45) or moved >= 225 then
-                            passedSince = passedSince or os.clock()
-                            if os.clock() - passedSince >= 0.12 then
-                                confirmed = true
-                                break
+                        if targetPart and launchPosition and impact then
+                            observedDistance = (targetPart.Position
+                                - launchPosition).Magnitude
+                            if launched and observedDistance >= 200 then
+                                task.wait(0.12)
+                                targetPart = ExtraUI.standTargetRoot(target)
+                                if targetPart then
+                                    observedDistance = (targetPart.Position
+                                        - launchPosition).Magnitude
+                                    if observedDistance >= 200 then
+                                        flung = true
+                                        break
+                                    end
+                                end
                             end
-                        else
-                            passedSince = nil
+                            if os.clock() - lastProgressAt >= 2 then
+                                lastProgressAt = os.clock()
+                                ExtraUI.standStatus(("\073\110\115\105\100\101\032\064\037\115\032\047\032\037\046\048\102\032\111\102\032\050\048\048\032\115\116\117\100\115\032\047\032\115\112\101\101\100\032\037\046\048\102\032\047\032\111\119\110\101\114\115\104\105\112\032\037\115\046")
+                                    :format(target.Name, observedDistance,
+                                        targetPart.AssemblyLinearVelocity.Magnitude,
+                                        launched and "\121\101\115" or "\110\111"))
+                            end
                         end
+                        task.wait(0.03)
                     end
+                    if not target then break end
+                    targetPart = ExtraUI.standTargetRoot(target)
+                    if S.standFlingMover then
+                        pcall(function() S.standFlingMover:Destroy() end)
+                        S.standFlingMover = nil
+                    end
+                    if S.standFlingTargetHumanoid then
+                        if S.standFlingTargetHumanoid.Parent then
+                            pcall(function()
+                                S.standFlingTargetHumanoid.PlatformStand =
+                                    S.standFlingTargetPlatformBefore or false
+                            end)
+                        end
+                        S.standFlingTargetHumanoid = nil
+                        S.standFlingTargetPlatformBefore = nil
+                    end
+                    if flung then break end
+                    if target and targetPart then
+                        ExtraUI.standStatus(("\070\108\105\110\103\032\099\111\110\116\097\099\116\032\114\101\115\101\116\032\047\032\064\037\115\032\115\116\105\108\108\032\097\116\032\037\046\048\102\032\111\102\032\050\048\048\032\115\116\117\100\115\046")
+                            :format(target.Name, observedDistance))
+                    end
+                    task.wait(0.04)
                 end
-                if confirmed or reason or not running() then break end
-                if target then task.wait(0.12) end
             end
         end)
         if generation == S.standFlingGeneration then
-            local here = not target or target.Parent == Players
             ExtraUI.standCancelFling()
-            if not ok then
-                ExtraUI.standStatus("\070\108\105\110\103\032\101\114\114\111\114\058\032" .. tostring(err))
-            elseif confirmed then
-                ExtraUI.standStatus(("\070\108\105\110\103\032\109\111\118\101\109\101\110\116\032\111\098\115\101\114\118\101\100\032\047\032\064\037\115\032\047\032\037\046\048\102\032\115\116\117\100\115")
-                    :format(target.Name, biggestMove))
-            elseif not here then
-                ExtraUI.standStatus("\070\108\105\110\103\032\115\116\111\112\112\101\100\058\032\116\097\114\103\101\116\032\108\101\102\116\032\116\104\101\032\115\101\114\118\101\114\046")
-            elseif reason then
-                ExtraUI.standStatus("\070\108\105\110\103\032\115\116\111\112\112\101\100\058\032" .. reason)
-            elseif not target then
-                ExtraUI.standStatus("\083\112\105\110\032\102\105\110\105\115\104\101\100\059\032\112\111\115\105\116\105\111\110\032\114\101\115\116\111\114\101\100\046")
-            elseif touchedTarget == 0 then
-                ExtraUI.standStatus(("\070\108\105\110\103\032\102\097\105\108\101\100\032\047\032\110\111\032\099\111\108\108\105\115\105\111\110\032\114\101\103\105\115\116\101\114\101\100\032\047\032\109\097\120\032\037\046\048\102\032\115\116\117\100\115")
-                    :format(biggestMove))
-            else
-                ExtraUI.standStatus(("\070\108\105\110\103\032\102\097\105\108\101\100\032\047\032\037\100\032\099\111\110\116\097\099\116\115\032\047\032\109\097\120\032\037\046\048\102\032\115\116\117\100\115")
-                    :format(touchedTarget, biggestMove))
-            end
+            ExtraUI.standStatus(not ok and ("\070\108\105\110\103\032\115\116\111\112\112\101\100\058\032" .. tostring(err))
+                or (target and flung
+                    and ("\064" .. target.Name .. "\032\099\111\110\102\105\114\109\101\100\032\050\048\048\043\032\115\116\117\100\115\032\097\102\116\101\114\032" .. attempts
+                        .. (attempts == 1 and "\032\097\116\116\101\109\112\116\046" or "\032\097\116\116\101\109\112\116\115\046"))
+                    or (target and "\070\108\105\110\103\032\115\116\111\112\112\101\100\059\032\116\097\114\103\101\116\032\108\101\102\116\032\111\114\032\099\104\097\114\097\099\116\101\114\032\114\101\115\101\116\046"
+                        or "\083\112\105\110\032\102\105\110\105\115\104\101\100\059\032\112\111\115\105\116\105\111\110\032\114\101\115\116\111\114\101\100\046")))
         end
     end)
 end
@@ -6739,11 +6831,7 @@ ExtraUI.standHandleChat = function(sender, message)
         ExtraUI.standStatus("\082\101\108\111\097\100\032\114\101\113\117\101\115\116\101\100\032\102\111\114\032" .. tool.Name .. "\046")
     elseif command == "\102\108\105\110\103" or command == "\115\112\105\110" then
         local target = nil
-        if command == "\102\108\105\110\103" then
-            if (argument or ""):match("\094\037\115\042\036") then
-                ExtraUI.standStatus("\085\115\101\032\033\102\108\105\110\103\032\060\112\108\097\121\101\114\062\059\032\117\115\101\032\033\115\112\105\110\032\116\111\032\115\112\105\110\032\105\110\032\112\108\097\099\101\046")
-                return
-            end
+        if command == "\102\108\105\110\103" and argument ~= "" then
             local issue
             target, issue = ExtraUI.standResolveTarget(sender, argument)
             if not target then ExtraUI.standStatus(issue); return end
@@ -7103,9 +7191,9 @@ bind(Bring.MouseButton1Click:Connect(function()
     startAutoKill(root.CFrame)
 end))
 
-
-
-
+ 
+ 
+ 
 ExtraUI.antiLockRenderName = "\082\065\067\069\082\095\065\110\116\105\076\111\099\107\077\111\118\101\109\101\110\116"
 ExtraUI.updateAntiLock = function()
     pcall(function() RunService:UnbindFromRenderStep(ExtraUI.antiLockRenderName) end)
@@ -7135,13 +7223,14 @@ bind(ExtraUI.AntiLockBtn.MouseButton1Click:Connect(function()
         or "\065\110\116\105\045\108\111\099\107\032\109\111\118\101\109\101\110\116\032\100\105\115\097\098\108\101\100\046")
 end))
 
-
+ 
 ExtraUI.configSlot = 1
 ExtraUI.configKeys = {"\113\117\105\101\116\065\117\116\111\075\105\108\108", "\097\117\116\111\075\105\108\108\086\111\105\100", "\097\110\116\105\086\111\105\100", "\097\117\116\111\065\114\109\111\114",
     "\097\110\116\105\083\116\111\109\112", "\097\117\116\111\083\116\111\109\112", "\115\116\111\109\112\065\110\105\109\097\116\105\111\110\069\110\097\098\108\101\100", "\115\116\111\109\112\080\097\099\101", "\107\110\105\102\101\084\114\097\118\101\108",
     "\114\101\115\101\116\084\104\114\101\115\104\111\108\100\073\110\100\101\120", "\115\116\114\097\102\101\082\097\100\105\117\115", "\118\111\105\100\068\101\112\116\104", "\117\105\083\099\097\108\101",
     "\114\101\115\112\097\119\110\065\116\068\101\097\116\104", "\097\100\097\112\116\105\118\101\082\097\112\105\100", "\110\111\082\101\099\111\105\108", "\110\111\083\112\114\101\097\100",
-    "\105\110\118\105\115\105\098\108\101\083\104\111\116", "\105\110\102\105\110\105\116\101\083\109\103", "\097\117\116\111\082\101\108\111\097\100\065\108\108", "\116\104\101\109\101\073\110\100\101\120", "\109\097\099\114\111\076\111\099\107",
+    "\105\110\118\105\115\105\098\108\101\083\104\111\116", "\105\110\102\105\110\105\116\101\083\109\103", "\097\117\116\111\082\101\108\111\097\100\065\108\108", "\116\104\101\109\101\073\110\100\101\120",
+    "\102\112\115\083\104\097\114\101", "\102\112\115\066\097\115\101", "\102\112\115\068\114\111\112",
     "\098\117\108\108\101\116\077\111\100\101", "\097\110\116\105\076\111\099\107", "\105\110\102\105\110\105\116\101\082\097\110\103\101"}
 ExtraUI.configPath = function()
     return "\083\112\101\099\116\114\097\077\117\108\116\105\095\067\111\110\102\105\103\095" .. ExtraUI.configSlot .. "\046\106\115\111\110"
@@ -7230,6 +7319,8 @@ bind(ExtraUI.ConfigLoad.MouseButton1Click:Connect(function()
     S.strafeRadius = math.clamp(S.strafeRadius, 4, 14)
     S.voidDepth = math.clamp(S.voidDepth, -300, -60)
     S.uiScale = math.clamp(S.uiScale, 0.7, 1.2)
+    S.fpsBase = math.clamp(math.floor(S.fpsBase), 1, 1000000000000)
+    S.fpsDrop = math.clamp(math.floor(S.fpsDrop), 0, S.fpsBase - 1)
     Rapid.restore()
     table.clear(S.rapidWeapons)
     if type(profile.rapidWeapons) == "\116\097\098\108\101" then
@@ -7303,9 +7394,7 @@ bind(ExtraUI.ConfigLoad.MouseButton1Click:Connect(function()
         "\083\084\079\077\080\032\065\078\073\077\065\084\073\079\078\058\032\079\078", "\083\084\079\077\080\032\065\078\073\077\065\084\073\079\078\058\032\079\070\070")
     style(ExtraUI.RespawnDeathBtn, S.respawnAtDeath,
         "\082\069\083\080\065\087\078\032\065\084\032\068\069\065\084\072\058\032\079\078", "\082\069\083\080\065\087\078\032\065\084\032\068\069\065\084\072\058\032\079\070\070")
-    style(ExtraUI.MacroBtn, S.macroLock,
-        "\077\065\067\082\079\032\080\069\082\083\073\083\084\058\032\079\078", "\077\065\067\082\079\032\080\069\082\083\073\083\084\058\032\079\070\070")
-    if S.macroLock then ExtraUI.ensureMacro(Me.Character) end
+    ExtraUI.syncFpsShare()
     ResetThresholdBtn.Text = "\082\069\083\069\084\032\065\084\058\032" .. ResetThresholds[S.resetThresholdIndex] .. "\032\072\080"
     local guns = ExtraUI.GunModButtons
     if ExtraUI.Capabilities.gunManager ~= false then
@@ -7351,7 +7440,7 @@ bind(ExtraUI.ConfigLoad.MouseButton1Click:Connect(function()
     ExtraUI.ConfigStatus.Text = "\076\111\097\100\101\100\032\115\108\111\116\032" .. ExtraUI.configSlot .. "\046"
 end))
 
-
+ 
 local Dragging, DragStart, GuiStart, DragInput = false, nil, nil, nil
 bind(Heading.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1
@@ -7378,6 +7467,8 @@ end))
 local function cleanup()
     if S.closed then return end
     S.closed = true
+    S.fpsShare = false
+    ExtraUI.stopFpsShare()
     ExtraUI.stopAura()
     S.knifeTravel = false
     S.resetGeneration = S.resetGeneration + 1
@@ -7498,7 +7589,7 @@ if Me.Character and (S.autoArmor or next(S.autoBuys)) then
     task.spawn(buyAutoItems, Me.Character)
 end
 
-
+ 
 Main.Visible = false
 ExtraUI.LoadOverlay = make("\070\114\097\109\101", {Parent = Gui, Name = "\082\097\099\101\114\076\111\097\100\105\110\103",
     Size = UDim2.fromScale(1, 1), BackgroundColor3 = C_BG,
