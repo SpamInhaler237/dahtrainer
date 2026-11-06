@@ -1,16 +1,3 @@
--- NOSR / Compact Typography UI V6
--- Clean Luau text • square geometry • restrained graphite/ember theme
--- Micro-animations: hover, press, section navigation, pulse, panel entry.
--- Original feature callbacks, scroll handlers and configuration retained.
-
--- All original feature operations are retained; layout remains client-side.
--- Requires a supported Roblox Luau environment.
-
--- NOSR Script | Readable, scroll-repaired edition
--- The original decimal-escaped Lua strings have been decoded for maintainability.
--- Nested scroll panels now update canvas heights and correctly accept wheel/touch input.
--- Original feature logic is otherwise retained; test in your own Roblox environment.
-
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
