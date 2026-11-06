@@ -1,3 +1,16 @@
+-- NOSR / Compact Typography UI V6
+-- Clean Luau text • square geometry • restrained graphite/ember theme
+-- Micro-animations: hover, press, section navigation, pulse, panel entry.
+-- Original feature callbacks, scroll handlers and configuration retained.
+
+-- All original feature operations are retained; layout remains client-side.
+-- Requires a supported Roblox Luau environment.
+
+-- NOSR Script | Readable, scroll-repaired edition
+-- The original decimal-escaped Lua strings have been decoded for maintainability.
+-- Nested scroll panels now update canvas heights and correctly accept wheel/touch input.
+-- Original feature logic is otherwise retained; test in your own Roblox environment.
+
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -31,7 +44,7 @@ if not Env.RacerIsXeno and type(queue_on_teleport) == "function" then
     pcall(function()
         queue_on_teleport([=[
             task.wait(2)
-            local scriptFile = loadfile([[Nosr_Script_Professional_GUI_v4.lua]])
+            local scriptFile = loadfile([[Nosr_Script_Sharp_Animated_GUI_v5.lua]])
             if scriptFile then scriptFile() end
         ]=])
     end)
@@ -181,7 +194,7 @@ local S: any = {
     voidDepth = -120,
     voidDwell = 0.02,
     strafeRadius = 7.5,
-    uiScale = 1,
+    uiScale = 0.86,
     rapidWeapons = {},
     adaptiveRapid = false,  
     lastAttemptWeaponName = nil,
@@ -269,22 +282,31 @@ local AutoStompTrack = nil
 local updateLoops  
 local targetTick  
 
--- NOSR 4.0 / professionally redesigned slate-and-ice interface.
+-- NOSR 5.0 / square-corner minimal control surface.
 -- Palette values are centralised so profile colour themes still apply.
-local C_BG = Color3.fromRGB(10, 15, 27)
-local C_PANEL = Color3.fromRGB(19, 27, 43)
-local C_OFF = Color3.fromRGB(29, 39, 57)
-local C_ON = Color3.fromRGB(30, 61, 79)
-local C_SELECTED = Color3.fromRGB(37, 57, 76)
-local C_TEXT = Color3.fromRGB(236, 243, 252)
-local C_FAINT = Color3.fromRGB(148, 165, 190)
-local C_ACCENT = Color3.fromRGB(110, 199, 255)
-local C_NAV = Color3.fromRGB(15, 22, 37)
-local C_NAV_OFF = Color3.fromRGB(25, 35, 53)
-local C_NAV_HOVER = Color3.fromRGB(43, 56, 76)
-local C_NAV_SELECTED = Color3.fromRGB(34, 63, 84)
-local C_BORDER = Color3.fromRGB(51, 68, 90)
-local C_MUTED = Color3.fromRGB(96, 114, 137)
+-- NOSR V5 / sharp industrial UI. Every corner stays exactly square.
+-- Palette: near-black graphite, warm paper typography, limited signal orange.
+local C_BG = Color3.fromRGB(12, 13, 15)
+local C_PANEL = Color3.fromRGB(20, 22, 25)
+local C_OFF = Color3.fromRGB(27, 29, 33)
+local C_ON = Color3.fromRGB(57, 40, 29)
+local C_SELECTED = Color3.fromRGB(43, 37, 31)
+local C_TEXT = Color3.fromRGB(242, 239, 232)
+local C_FAINT = Color3.fromRGB(160, 162, 158)
+local C_ACCENT = Color3.fromRGB(246, 173, 109)
+local C_NAV = Color3.fromRGB(17, 19, 22)
+local C_NAV_OFF = Color3.fromRGB(22, 24, 27)
+local C_NAV_HOVER = Color3.fromRGB(39, 42, 45)
+local C_NAV_SELECTED = Color3.fromRGB(51, 39, 30)
+local C_BORDER = Color3.fromRGB(60, 62, 62)
+local C_MUTED = Color3.fromRGB(112, 119, 119)
+local C_PRESSED = Color3.fromRGB(67, 49, 36)
+local TweenService = game:GetService("TweenService")
+local T_SOFT = TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local T_SNAP = TweenInfo.new(0.23, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
+-- Retain the proven layout coordinate system; use a smaller starting UIScale so
+-- no panel, nested scroll region, or callback needs to be resized/rebound.
 local DESIGN_WIDTH, DESIGN_HEIGHT = 870, 700
 
 local function bind(connection)
@@ -300,15 +322,10 @@ local function make(className, props)
     for property, value in pairs(props) do instance[property] = value end
     return instance
 end
--- A real corner helper replaces the placeholder from the original UI.
-local function round(obj, radius)
-    local existing = obj:FindFirstChildOfClass("UICorner")
-    if existing then
-        existing.CornerRadius = UDim.new(0, radius == 0 and 10 or (radius or 10))
-    else
-        make("UICorner", {Parent = obj, CornerRadius = UDim.new(0,
-            radius == 0 and 10 or (radius or 10))})
-    end
+-- No UICorner objects: deliberate, precise square geometry throughout.
+local function round(obj, _radius)
+    local oldCorner = obj:FindFirstChildOfClass("UICorner")
+    if oldCorner then oldCorner:Destroy() end
     return obj
 end
 local function label(parent, title, y, height, color, size)
@@ -321,59 +338,106 @@ local function label(parent, title, y, height, color, size)
         TextTruncate = Enum.TextTruncate.AtEnd,
     })
 end
+
+-- Compact typography: natural-case labels, stronger label hierarchy, and
+-- uppercase status abbreviations. Button text changes remain presentation-only:
+-- none of the feature callbacks or stored settings are changed.
+local KEEP_CAPS = {
+    ON = true, OFF = true, UI = true, FPS = true, HP = true,
+    ESP = true, AFK = true, SMG = true, FOV = true, XENO = true,
+    R15 = true, R6 = true, RGB = true, NOSR = true, PVP = true,
+}
+local function formatButtonTitle(value)
+    if type(value) ~= "string" or value:find("%l") then return value end
+    local formatted = value:gsub("[A-Z][A-Z0-9]*", function(word)
+        if KEEP_CAPS[word] then return word end
+        return word:sub(1, 1) .. word:sub(2):lower()
+    end)
+    return formatted:gsub("%s*:%s*", "   ·   ")
+end
+
+-- Compact interactive rows. Hover and pressed states animate without moving hitboxes.
+-- The state rail indicates an enabled option instead of a bright rounded pill.
 local function button(parent, title, x, y, w, h)
     local nested = parent:IsA("ScrollingFrame") and parent.Name ~= "ModulePanel"
-    local result = round(make("TextButton", {
+    local result = make("TextButton", {
         Parent = parent, Position = UDim2.fromOffset(nested and 8 or x, y),
         Size = nested and UDim2.new(1, -19, 0, h) or UDim2.fromOffset(w, h),
-        BackgroundColor3 = C_OFF, BorderSizePixel = 0, AutoButtonColor = false,
-        Text = title, TextColor3 = C_TEXT, Font = Enum.Font.GothamSemibold,
+        BackgroundColor3 = C_OFF, BorderSizePixel = 0,
+        AutoButtonColor = false, Text = formatButtonTitle(title),
+        TextColor3 = C_TEXT, Font = Enum.Font.Gotham,
         TextSize = 12, TextTruncate = Enum.TextTruncate.AtEnd,
         TextXAlignment = w <= 78 and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left,
-    }), w <= 78 and 9 or 10)
+    })
     if w > 78 then
         make("UIPadding", {Parent = result, PaddingLeft = UDim.new(0, 15),
-            PaddingRight = UDim.new(0, 12)})
+            PaddingRight = UDim.new(0, 22)})
     end
-    make("UIStroke", {Parent = result, Color = C_BORDER,
-        Thickness = 1, Transparency = 0.55})
-    local tweenService = game:GetService("TweenService")
-    bind(result.MouseEnter:Connect(function()
-        if S.closed then return end
-        local target = (result:GetAttribute("SpectraTab") and C_NAV_HOVER)
-            or (result:GetAttribute("SpectraOn") and C_SELECTED)
-            or C_NAV_HOVER
-        tweenService:Create(result, TweenInfo.new(0.14, Enum.EasingStyle.Quad),
-            {BackgroundColor3 = target}):Play()
+    -- Keep the revised text style even when other feature logic updates a button.
+    local reformatting = false
+    bind(result:GetPropertyChangedSignal("Text"):Connect(function()
+        if reformatting or not result.Parent then return end
+        local pretty = formatButtonTitle(result.Text)
+        if pretty ~= result.Text then
+            reformatting = true
+            result.Text = pretty
+            reformatting = false
+        end
     end))
-    bind(result.MouseLeave:Connect(function()
-        if S.closed then return end
-        local target = result:GetAttribute("SpectraTab")
-            and (result:GetAttribute("SpectraOn") and C_NAV_SELECTED or C_NAV_OFF)
-            or result:GetAttribute("SpectraHeader") and C_NAV_OFF
-            or result:GetAttribute("SpectraOn") and C_ON or C_OFF
-        tweenService:Create(result, TweenInfo.new(0.16, Enum.EasingStyle.Quad),
-            {BackgroundColor3 = target}):Play()
-    end))
+    local edge = make("UIStroke", {Parent = result, Color = C_BORDER,
+        Thickness = 1, Transparency = 0.66})
+    local hover, pressed = false, false
+    local function restColor()
+        if result:GetAttribute("SpectraTab") then
+            return result:GetAttribute("SpectraOn") and C_SELECTED or C_NAV_OFF
+        end
+        if result:GetAttribute("SpectraHeader") then return C_NAV_OFF end
+        return result:GetAttribute("SpectraOn") and C_ON or C_OFF
+    end
+    local function repaint()
+        if S.closed or not result.Parent then return end
+        local goal = pressed and C_PRESSED
+            or hover and C_NAV_HOVER
+            or restColor()
+        TweenService:Create(result, T_SOFT, {BackgroundColor3 = goal}):Play()
+        TweenService:Create(edge, T_SOFT, {
+            Transparency = hover and 0.25 or (result:GetAttribute("SpectraOn") and 0.18 or 0.66),
+            Color = result:GetAttribute("SpectraOn") and C_ACCENT or C_BORDER,
+        }):Play()
+    end
+    bind(result.MouseEnter:Connect(function() hover = true; repaint() end))
+    bind(result.MouseLeave:Connect(function() hover = false; pressed = false; repaint() end))
+    bind(result.MouseButton1Down:Connect(function() pressed = true; repaint() end))
+    bind(result.MouseButton1Up:Connect(function() pressed = false; repaint() end))
     return result
 end
 local function style(btn, value, on, off)
     btn.Text = value and on or off
     btn:SetAttribute("SpectraOn", value)
-    btn.BackgroundColor3 = value and C_ON or C_OFF
-    local stroke = btn:FindFirstChildOfClass("UIStroke")
-    if stroke then
-        stroke.Color = value and C_ACCENT or C_BORDER
-        stroke.Transparency = value and 0.16 or 0.58
+    local previous = btn:GetAttribute("NosrLastState")
+    if previous ~= value then
+        btn:SetAttribute("NosrLastState", value)
+        TweenService:Create(btn, T_SOFT, {
+            BackgroundColor3 = value and C_ON or C_OFF,
+        }):Play()
     end
-    local light = btn:FindFirstChild("NosrState")
-    if not light then
-        light = make("Frame", {Name = "NosrState", Parent = btn,
-            AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -9, 0.5, 0),
-            Size = UDim2.fromOffset(6, 6), BorderSizePixel = 0})
-        round(light, 3)
+    local outline = btn:FindFirstChildOfClass("UIStroke")
+    if outline then
+        outline.Color = value and C_ACCENT or C_BORDER
+        outline.Transparency = value and 0.22 or 0.66
     end
-    light.BackgroundColor3 = value and C_ACCENT or C_MUTED
+    local rail = btn:FindFirstChild("NosrState")
+    if not rail then
+        rail = make("Frame", {Name = "NosrState", Parent = btn,
+            AnchorPoint = Vector2.new(1, 0.5),
+            Position = UDim2.new(1, -8, 0.5, 0),
+            Size = UDim2.fromOffset(3, 12), BorderSizePixel = 0,
+            BackgroundColor3 = C_MUTED})
+    end
+    TweenService:Create(rail, T_SOFT, {
+        Size = UDim2.fromOffset(3, value and 19 or 8),
+        BackgroundColor3 = value and C_ACCENT or C_MUTED,
+    }):Play()
 end
 
 -- Consistent canvas sizing is essential for dynamically populated lists.
@@ -405,15 +469,15 @@ local Gui = make("ScreenGui", {
     DisplayOrder = 2200, IgnoreGuiInset = true,
     ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 })
-local Main = round(make("Frame", {
-    Name = "NosrControlConsole", Parent = Gui, AnchorPoint = Vector2.new(0.5, 0.5),
-    Position = UDim2.fromScale(0.5, 0.5),
+local Main = make("Frame", {
+    Name = "NosrControlConsole", Parent = Gui,
+    AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5),
     Size = UDim2.fromOffset(DESIGN_WIDTH, DESIGN_HEIGHT),
-    BackgroundColor3 = C_BG, BorderSizePixel = 0, Active = true,
-    ClipsDescendants = true,
-}), 18)
+    BackgroundColor3 = C_BG, BorderSizePixel = 0,
+    Active = true, ClipsDescendants = true,
+})
 make("UIStroke", {Parent = Main, Color = C_BORDER, Thickness = 1,
-    Transparency = 0.15})
+    Transparency = 0.08})
 local MainScale = make("UIScale", {Parent = Main, Scale = 1})
 local function fitConsoleToViewport()
     local camera = Workspace.CurrentCamera
@@ -435,54 +499,54 @@ bind(Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
 end))
 fitConsoleToViewport()
 
--- The chrome is independent of the page content, and remains visible while switching tabs.
+-- Fixed chrome; functional elements live in distinct clipped control surfaces.
 local Header = make("Frame", {Name = "Header", Parent = Main,
     Position = UDim2.fromOffset(0, 0), Size = UDim2.fromOffset(DESIGN_WIDTH, 81),
     BackgroundColor3 = C_NAV, BorderSizePixel = 0})
-make("UIGradient", {Parent = Header, Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, C_NAV),
-    ColorSequenceKeypoint.new(1, C_BG),
-}), Rotation = 0})
+local HeaderAccent = make("Frame", {Parent = Header,
+    Position = UDim2.fromOffset(0, 0), Size = UDim2.fromOffset(DESIGN_WIDTH, 3),
+    BackgroundColor3 = C_ACCENT, BorderSizePixel = 0})
 make("Frame", {Parent = Main, Position = UDim2.fromOffset(0, 80),
     Size = UDim2.fromOffset(DESIGN_WIDTH, 1), BackgroundColor3 = C_BORDER,
     BorderSizePixel = 0})
-local HeaderAccent = make("Frame", {Parent = Header,
-    Position = UDim2.fromOffset(0, 0), Size = UDim2.fromOffset(5, 80),
+ExtraUI.Brand = make("Frame", {Parent = Header,
+    Position = UDim2.fromOffset(21, 19), Size = UDim2.fromOffset(40, 40),
     BackgroundColor3 = C_ACCENT, BorderSizePixel = 0})
-ExtraUI.Brand = round(make("Frame", {Parent = Header,
-    Position = UDim2.fromOffset(22, 18), Size = UDim2.fromOffset(44, 44),
-    BackgroundColor3 = C_ACCENT, BorderSizePixel = 0}), 12)
 make("TextLabel", {Parent = ExtraUI.Brand, Size = UDim2.fromScale(1, 1),
     BackgroundTransparency = 1, Text = "N", TextColor3 = C_BG,
-    Font = Enum.Font.GothamBlack, TextSize = 27})
-local Heading = label(Header, "NOSR", 14, 33, C_TEXT, 24)
-Heading.Font = Enum.Font.GothamBold
-Heading.Position = UDim2.fromOffset(82, 12)
-Heading.Size = UDim2.fromOffset(230, 34)
+    Font = Enum.Font.GothamBlack, TextSize = 25})
+local Heading = label(Header, "NOSR  /  CONTROL", 10, 32, C_TEXT, 21)
+Heading.Font = Enum.Font.GothamSemibold
+Heading.Position = UDim2.fromOffset(77, 15)
+Heading.Size = UDim2.fromOffset(390, 28)
 Heading.Active = true
-local Subtitle = label(Header, "CONTROL CONSOLE     /     V4", 45, 18, C_FAINT, 10)
-Subtitle.Position = UDim2.fromOffset(83, 47)
-Subtitle.Size = UDim2.fromOffset(450, 18)
-ExtraUI.LivePill = round(make("Frame", {Parent = Header,
-    Position = UDim2.fromOffset(640, 28), Size = UDim2.fromOffset(91, 25),
-    BackgroundColor3 = C_ON, BorderSizePixel = 0}), 12)
-make("UIStroke", {Parent = ExtraUI.LivePill, Color = C_ACCENT,
-    Transparency = 0.6, Thickness = 1})
-make("Frame", {Parent = ExtraUI.LivePill, Position = UDim2.fromOffset(11, 10),
-    Size = UDim2.fromOffset(6, 6), BackgroundColor3 = C_ACCENT,
-    BorderSizePixel = 0})
-local LiveLabel = label(ExtraUI.LivePill, "ONLINE", 3, 18, C_TEXT, 10)
-if Env.RacerIsXeno then LiveLabel.Text = "XENO" end
-LiveLabel.Position = UDim2.fromOffset(26, 4)
-LiveLabel.Size = UDim2.fromOffset(62, 18)
-LiveLabel.Font = Enum.Font.GothamBold
-local Minimise = button(Header, "–", 767, 26, 38, 30)
+local Subtitle = label(Header, "MODULE INTERFACE    //    VERSION 06", 44, 18, C_FAINT, 10)
+Subtitle.Position = UDim2.fromOffset(78, 43)
+Subtitle.Size = UDim2.fromOffset(430, 18)
+
+local SystemLabel = label(Header, "SYSTEM  /  READY", 18, 17, C_TEXT, 10)
+SystemLabel.Position = UDim2.fromOffset(570, 23)
+SystemLabel.Size = UDim2.fromOffset(155, 19)
+SystemLabel.Font = Enum.Font.GothamBold
+local SystemSub = label(Header, "LOCAL INTERFACE  •  V6", 41, 16, C_FAINT, 9)
+SystemSub.Position = UDim2.fromOffset(570, 42)
+SystemSub.Size = UDim2.fromOffset(160, 16)
+ExtraUI.LivePill = make("Frame", {Parent = Header,
+    Position = UDim2.fromOffset(550, 31), Size = UDim2.fromOffset(8, 8),
+    BackgroundColor3 = C_ACCENT, BorderSizePixel = 0})
+local LiveLabel = SystemLabel
+if Env.RacerIsXeno then LiveLabel.Text = "SYSTEM  /  XENO" end
+-- Soft heartbeat indicates that the local UI is responsive, not server status.
+TweenService:Create(ExtraUI.LivePill,
+    TweenInfo.new(0.95, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+    {BackgroundTransparency = 0.72}):Play()
+local Minimise = button(Header, "_", 767, 26, 38, 30)
 local Close = button(Header, "×", 813, 26, 38, 30)
 for _, control in ipairs({Minimise, Close}) do
     control:SetAttribute("SpectraHeader", true)
     control.BackgroundColor3 = C_NAV_OFF
 end
-Close.TextColor3 = Color3.fromRGB(255, 164, 177)
+Close.TextColor3 = Color3.fromRGB(235, 148, 137)
 
 local Search = round(make("TextBox", {
     Parent = Main, Position = UDim2.fromOffset(11, 50), Size = UDim2.fromOffset(318, 34),
@@ -524,56 +588,119 @@ Status.TextWrapped = true
 Status.TextTruncate = Enum.TextTruncate.None
 Status.TextYAlignment = Enum.TextYAlignment.Top
 
-local Sidebar = round(make("Frame", {Parent = Main,
+-- New compact navigation: number, separator and label are independent objects.
+-- The selection rail lives on the right, never under the index or the title.
+local Sidebar = make("Frame", {Parent = Main,
     Name = "Sidebar", Position = UDim2.fromOffset(17, 99),
     Size = UDim2.fromOffset(184, 525), BackgroundColor3 = C_NAV,
-    BorderSizePixel = 0}), 14)
+    BorderSizePixel = 0})
 make("UIStroke", {Parent = Sidebar, Color = C_BORDER, Thickness = 1,
-    Transparency = 0.45})
-local ModulesLabel = label(Sidebar, "WORKSPACE", 21, 21, C_FAINT, 10)
-ModulesLabel.Position = UDim2.fromOffset(19, 19)
-ModulesLabel.Font = Enum.Font.GothamBold
-local NavigationHint = label(Sidebar, "CORE MODULES", 45, 18, C_MUTED, 9)
-NavigationHint.Position = UDim2.fromOffset(19, 47)
-local TargetTab = button(Sidebar, "01   TARGETS", 12, 83, 160, 51)
-local AimTab = button(Sidebar, "02   COMBAT", 12, 146, 160, 51)
-local ToolsTab = button(Sidebar, "03   GAMEPLAY", 12, 209, 160, 51)
-ExtraUI.EspTab = button(Sidebar, "04   VISUALS", 12, 272, 160, 51)
-local SettingsTab = button(Sidebar, "05   SETTINGS", 12, 335, 160, 51)
+    Transparency = 0.48})
+local ModulesLabel = label(Sidebar, "WORKSPACE", 21, 21, C_TEXT, 11)
+ModulesLabel.Position = UDim2.fromOffset(15, 16)
+ModulesLabel.Font = Enum.Font.GothamSemibold
+local NavigationHint = label(Sidebar, "05  MODULES", 45, 18, C_MUTED, 10)
+NavigationHint.Position = UDim2.fromOffset(15, 43)
+NavigationHint.Font = Enum.Font.RobotoMono
+make("Frame", {Parent = Sidebar, Position = UDim2.fromOffset(13, 74),
+    Size = UDim2.fromOffset(158, 1), BackgroundColor3 = C_BORDER,
+    BorderSizePixel = 0})
+local TargetTab = button(Sidebar, "", 11, 87, 162, 40)
+local AimTab = button(Sidebar, "", 11, 135, 162, 40)
+local ToolsTab = button(Sidebar, "", 11, 183, 162, 40)
+ExtraUI.EspTab = button(Sidebar, "", 11, 231, 162, 40)
+local SettingsTab = button(Sidebar, "", 11, 279, 162, 40)
+
+ExtraUI.TabIndicators = {}
+ExtraUI.TabTypography = {}
+local navItems = {
+    {TargetTab, "01", "Targets"},
+    {AimTab, "02", "Combat"},
+    {ToolsTab, "03", "Gameplay"},
+    {ExtraUI.EspTab, "04", "Visuals"},
+    {SettingsTab, "05", "Settings"},
+}
+for _, entry in ipairs(navItems) do
+    local tab, index, name = entry[1], entry[2], entry[3]
+    -- A plain button background handles mouse and touch, with no text to overlap.
+    tab.Text = ""
+    tab.BackgroundColor3 = C_NAV_OFF
+    local padding = tab:FindFirstChildOfClass("UIPadding")
+    if padding then padding:Destroy() end
+    local outline = tab:FindFirstChildOfClass("UIStroke")
+    if outline then outline.Transparency = 0.82 end
+
+    local indexLabel = make("TextLabel", {
+        Name = "Index", Parent = tab, Position = UDim2.fromOffset(13, 9),
+        Size = UDim2.fromOffset(24, 22), BackgroundTransparency = 1,
+        Text = index, Font = Enum.Font.RobotoMono, TextSize = 11,
+        TextColor3 = C_MUTED, TextXAlignment = Enum.TextXAlignment.Left,
+    })
+    make("Frame", {Name = "TextDivider", Parent = tab,
+        Position = UDim2.fromOffset(42, 12), Size = UDim2.fromOffset(1, 16),
+        BackgroundColor3 = C_BORDER, BorderSizePixel = 0})
+    local titleLabel = make("TextLabel", {
+        Name = "Title", Parent = tab, Position = UDim2.fromOffset(53, 8),
+        Size = UDim2.fromOffset(95, 24), BackgroundTransparency = 1,
+        Text = name, Font = Enum.Font.GothamMedium, TextSize = 12,
+        TextColor3 = C_TEXT, TextXAlignment = Enum.TextXAlignment.Left,
+    })
+    -- The right-side marker has its own six-pixel margin from every label.
+    ExtraUI.TabIndicators[tab] = make("Frame", {Parent = tab,
+        Name = "ActiveRail", AnchorPoint = Vector2.new(1, 0.5),
+        Position = UDim2.new(1, -6, 0.5, 0),
+        Size = UDim2.fromOffset(2, 0),
+        BackgroundColor3 = C_ACCENT, BorderSizePixel = 0,
+        Visible = true})
+    ExtraUI.TabTypography[tab] = {number = indexLabel, title = titleLabel}
+    bind(tab.MouseEnter:Connect(function()
+        if tab:GetAttribute("SpectraOn") then return end
+        TweenService:Create(titleLabel, T_SOFT, {TextColor3 = C_TEXT}):Play()
+        TweenService:Create(indexLabel, T_SOFT, {TextColor3 = C_FAINT}):Play()
+    end))
+    bind(tab.MouseLeave:Connect(function()
+        if tab:GetAttribute("SpectraOn") then return end
+        TweenService:Create(titleLabel, T_SOFT, {TextColor3 = C_FAINT}):Play()
+        TweenService:Create(indexLabel, T_SOFT, {TextColor3 = C_MUTED}):Play()
+    end))
+end
+
+make("Frame", {Parent = Sidebar, Position = UDim2.fromOffset(13, 351),
+    Size = UDim2.fromOffset(158, 1), BackgroundColor3 = C_BORDER,
+    BorderSizePixel = 0})
+local NavigationHelpHeader = label(Sidebar, "QUICK GUIDE", 373, 20, C_MUTED, 10)
+NavigationHelpHeader.Position = UDim2.fromOffset(15, 370)
+NavigationHelpHeader.Font = Enum.Font.RobotoMono
 ExtraUI.SidebarHint = label(Sidebar,
-    "SELECT A MODULE\nTHEN A CATEGORY", 418, 38, C_FAINT, 10)
-ExtraUI.SidebarHint.Position = UDim2.fromOffset(18, 425)
+    "Select a module to open.\nScroll inside a panel for more.", 401, 48, C_FAINT, 10)
+ExtraUI.SidebarHint.Position = UDim2.fromOffset(15, 400)
 ExtraUI.SidebarHint.TextWrapped = true
 ExtraUI.SidebarHint.TextYAlignment = Enum.TextYAlignment.Top
-ExtraUI.TabIndicators = {}
-for _, tab in ipairs({TargetTab, AimTab, ToolsTab, ExtraUI.EspTab, SettingsTab}) do
-    tab.TextXAlignment = Enum.TextXAlignment.Left
-    tab.TextColor3 = C_TEXT
-    tab.TextSize = 12
-    tab.BackgroundColor3 = C_NAV_OFF
-    local border = tab:FindFirstChildOfClass("UIStroke")
-    if border then border.Transparency = 0.65 end
-    ExtraUI.TabIndicators[tab] = round(make("Frame", {Parent = tab,
-        Position = UDim2.fromOffset(0, 11), Size = UDim2.fromOffset(3, 29),
-        BackgroundColor3 = C_ACCENT, BorderSizePixel = 0,
-        Visible = false}), 3)
-end
-ExtraUI.BuildLabel = label(Sidebar, "NOSR   /   BUILD 04", 486, 18, C_MUTED, 9)
-ExtraUI.BuildLabel.Position = UDim2.fromOffset(18, 487)
+ExtraUI.SidebarHint.Font = Enum.Font.Gotham
+make("Frame", {Parent = Sidebar, Position = UDim2.fromOffset(13, 474),
+    Size = UDim2.fromOffset(158, 1), BackgroundColor3 = C_BORDER,
+    BorderSizePixel = 0})
+ExtraUI.BuildLabel = label(Sidebar, "NOSR   /   V06", 486, 18, C_MUTED, 10)
+ExtraUI.BuildLabel.Position = UDim2.fromOffset(15, 487)
+ExtraUI.BuildLabel.Font = Enum.Font.RobotoMono
 
-local StatusBar = round(make("Frame", {Parent = Main,
+local StatusBar = make("Frame", {Parent = Main,
     Name = "StatusFooter", Position = UDim2.fromOffset(17, 638),
     Size = UDim2.fromOffset(836, 44), BackgroundColor3 = C_NAV,
-    BorderSizePixel = 0}), 11)
-make("UIStroke", {Parent = StatusBar, Color = C_BORDER, Thickness = 1,
-    Transparency = 0.5})
-round(make("Frame", {Parent = StatusBar, Position = UDim2.fromOffset(15, 18),
-    Size = UDim2.fromOffset(7, 7), BackgroundColor3 = C_ACCENT,
-    BorderSizePixel = 0}), 4)
+    BorderSizePixel = 0})
+make("UIStroke", {Parent = StatusBar, Color = C_BORDER,
+    Thickness = 1, Transparency = 0.52})
+make("Frame", {Parent = StatusBar, Position = UDim2.fromOffset(17, 12),
+    Size = UDim2.fromOffset(2, 21), BackgroundColor3 = C_ACCENT,
+    BorderSizePixel = 0})
+local FooterCaption = label(StatusBar, "EVENT LOG", 9, 18, C_FAINT, 9)
+FooterCaption.Position = UDim2.fromOffset(29, 11)
+FooterCaption.Size = UDim2.fromOffset(77, 20)
+FooterCaption.Font = Enum.Font.GothamBold
 Status.Parent = StatusBar
-Status.Position = UDim2.fromOffset(34, 7)
-Status.Size = UDim2.fromOffset(786, 30)
-Status.TextColor3 = C_FAINT
+Status.Position = UDim2.fromOffset(112, 7)
+Status.Size = UDim2.fromOffset(702, 30)
+Status.TextColor3 = C_TEXT
 Status.TextSize = 11
 Status.Font = Enum.Font.GothamMedium
 
@@ -1203,18 +1330,21 @@ ExtraUI.setUiScale = slider(SettingsPage, "INTERFACE SCALE", 349, (S.uiScale - 0
     function(f) return 0.7 + f * 0.5 end,
     function(value) S.uiScale = value; ExtraUI.updateUiScale() end,
     function(value) return string.format("%.2f×", value) end)
-local ThemeNames = {"ICE", "MINT", "VIOLET", "AMBER"}
+local ThemeNames = {"EMBER", "SAGE", "LILAC", "PEARL"}
 local ThemeColors = {
-    Color3.fromRGB(110, 199, 255), Color3.fromRGB(93, 225, 196),
-    Color3.fromRGB(184, 151, 241), Color3.fromRGB(244, 164, 100),
+    Color3.fromRGB(246, 173, 109), Color3.fromRGB(142, 216, 163),
+    Color3.fromRGB(187, 164, 225), Color3.fromRGB(224, 222, 209),
 }
-local ThemeBtn = button(SettingsPage, "ACCENT: ICE", 12, 407, 166, 30)
+local ThemeBtn = button(SettingsPage, "ACCENT: EMBER", 12, 407, 166, 30)
 ExtraUI.RespawnDeathBtn = button(SettingsPage, "RESPAWN AT DEATH: OFF", 188, 407, 166, 30)
 local function applyTheme(index)
     local old = C_ACCENT
-    local oldNav = C_NAV_SELECTED
+    local oldNav, oldOn, oldSelected = C_NAV_SELECTED, C_ON, C_SELECTED
     C_ACCENT = ThemeColors[index]
     C_NAV_SELECTED = C_NAV:Lerp(C_ACCENT, 0.18)
+    C_ON = C_NAV:Lerp(C_ACCENT, 0.17)
+    C_SELECTED = C_NAV:Lerp(C_ACCENT, 0.12)
+    C_PRESSED = C_NAV:Lerp(C_ACCENT, 0.25)
     for _, item in ipairs(Gui:GetDescendants()) do
         if item:IsA("UIStroke") and item.Color == old then item.Color = C_ACCENT end
         if item:IsA("TextLabel") and item.TextColor3 == old then item.TextColor3 = C_ACCENT end
@@ -1222,8 +1352,14 @@ local function applyTheme(index)
         if item:IsA("Frame") and item.BackgroundColor3 == old then
             item.BackgroundColor3 = C_ACCENT
         end
-        if item:IsA("TextButton") and item.BackgroundColor3 == oldNav then
-            item.BackgroundColor3 = C_NAV_SELECTED
+        if item:IsA("TextButton") then
+            if item.BackgroundColor3 == oldNav then
+                item.BackgroundColor3 = C_NAV_SELECTED
+            elseif item.BackgroundColor3 == oldOn then
+                item.BackgroundColor3 = C_ON
+            elseif item.BackgroundColor3 == oldSelected then
+                item.BackgroundColor3 = C_SELECTED
+            end
         end
     end
     ThemeBtn.Text = "ACCENT: " .. ThemeNames[index]
@@ -1269,12 +1405,12 @@ local function reflowPage(frame)
                 child.Size = UDim2.new(1, -38, sz.Y.Scale, sz.Y.Offset)
             end
             if child:IsA("TextLabel") then
-                child.TextSize = math.min(14, child.TextSize + 1)
+                child.TextSize = math.min(13, child.TextSize)
                 if child.TextColor3 == C_ACCENT then
-                    child.Font = Enum.Font.GothamBold
+                    child.Font = Enum.Font.GothamSemibold
                 end
             elseif child:IsA("TextButton") then
-                child.Font = Enum.Font.GothamSemibold
+                child.Font = Enum.Font.Gotham
             elseif child:IsA("TextBox") then
                 round(child, 9)
                 make("UIStroke", {Parent = child, Color = C_BORDER,
@@ -1306,53 +1442,84 @@ local function groupedPage(title, caption, sections)
         Size = UDim2.fromOffset(635, 525), BackgroundTransparency = 1,
         Visible = false, ClipsDescendants = true,
     })
-    local heading = label(hub, title, 6, 29, C_TEXT, 20)
-    heading.Font = Enum.Font.GothamBold
-    heading.Position = UDim2.fromOffset(5, 4)
-    heading.Size = UDim2.fromOffset(610, 29)
-    local desc = label(hub, caption, 38, 18, C_FAINT, 11)
-    desc.Position = UDim2.fromOffset(6, 40)
-    desc.Size = UDim2.fromOffset(610, 18)
-    local TabsRail = round(make("Frame", {Parent = hub,
-        Position = UDim2.fromOffset(6, 68), Size = UDim2.fromOffset(619, 40),
-        BackgroundColor3 = C_NAV, BorderSizePixel = 0}), 10)
-    make("UIStroke", {Parent = TabsRail, Color = C_BORDER,
-        Transparency = 0.58, Thickness = 1})
-    local buttons = {}
-    local activeIndex = 1
+    -- Editorial page hierarchy: headline, descriptive line, fine divider, tab rail.
+    local heading = label(hub, string.upper(title), 7, 28, C_TEXT, 19)
+    heading.Font = Enum.Font.GothamSemibold
+    heading.Position = UDim2.fromOffset(6, 5)
+    heading.Size = UDim2.fromOffset(500, 30)
+    local tag = label(hub, string.format("SECTIONS  /  %02d", #sections), 8, 20, C_ACCENT, 10)
+    tag.Font = Enum.Font.RobotoMono
+    tag.Position = UDim2.fromOffset(511, 11)
+    tag.Size = UDim2.fromOffset(113, 20)
+    tag.TextXAlignment = Enum.TextXAlignment.Right
+    local desc = label(hub, caption, 40, 17, C_FAINT, 11)
+    desc.Position = UDim2.fromOffset(6, 37)
+    desc.Size = UDim2.fromOffset(615, 19)
+    make("Frame", {Parent = hub, Position = UDim2.fromOffset(6, 63),
+        Size = UDim2.fromOffset(619, 1), BackgroundColor3 = C_BORDER,
+        BorderSizePixel = 0})
+    local TabsRail = make("Frame", {Parent = hub,
+        Position = UDim2.fromOffset(6, 72), Size = UDim2.fromOffset(619, 38),
+        BackgroundColor3 = C_NAV, BorderSizePixel = 0})
+    make("Frame", {Parent = TabsRail, Position = UDim2.fromOffset(0, 37),
+        Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = C_BORDER,
+        BorderSizePixel = 0})
+    local buttons, underlines = {}, {}
+    local activeIndex = 0
     local function openSection(index)
+        local switching = activeIndex ~= index
         activeIndex = index
         for n, section in ipairs(sections) do
+            local panel = section[2]
             local isOn = n == index
-            section[2].Visible = isOn
-            section[2].ScrollingEnabled = true
+            panel.Visible = isOn
+            panel.ScrollingEnabled = true
             local btn = buttons[n]
             btn:SetAttribute("SpectraOn", isOn)
-            btn.BackgroundColor3 = isOn and C_NAV_SELECTED or C_NAV_OFF
-            btn.TextColor3 = isOn and C_ACCENT or C_FAINT
-            local border = btn:FindFirstChildOfClass("UIStroke")
-            if border then
-                border.Color = isOn and C_ACCENT or C_BORDER
-                border.Transparency = isOn and 0.43 or 1
+            local goal = isOn and C_SELECTED or C_NAV_OFF
+            TweenService:Create(btn, T_SOFT, {BackgroundColor3 = goal,
+                TextColor3 = isOn and C_ACCENT or C_FAINT}):Play()
+            local underline = underlines[n]
+            TweenService:Create(underline, T_SNAP, {
+                Size = UDim2.new(1, -16, 0, isOn and 2 or 0),
+                BackgroundColor3 = C_ACCENT,
+            }):Play()
+            if isOn and switching then
+                panel.Position = UDim2.fromOffset(19, 119)
+                panel.BackgroundTransparency = 0.18
+                TweenService:Create(panel, T_SNAP, {
+                    Position = UDim2.fromOffset(6, 119),
+                    BackgroundTransparency = 0,
+                }):Play()
             end
         end
     end
+    local n = #sections
+    local gap = 8
+    local width = n == 1 and 180 or n == 2 and 249 or 192
     for index, section in ipairs(sections) do
         local panel = section[2]
         panel.Parent = hub
         panel.Position = UDim2.fromOffset(6, 119)
         panel.Size = UDim2.fromOffset(619, 405)
         panel.Visible = false
-        local n = #sections
-        local gap = 6
-        local width = math.floor((603 - (n - 1) * gap) / n)
         local x = 8 + (index - 1) * (width + gap)
-        local btn = button(TabsRail, section[1], x, 5, width, 30)
-        btn.TextSize = 10
+        local btn = button(TabsRail, section[1], x, 4, width, 33)
+        btn.Font = Enum.Font.GothamMedium
+        btn.TextSize = 11
         btn.TextXAlignment = Enum.TextXAlignment.Center
+        btn.BackgroundColor3 = C_NAV_OFF
         btn:SetAttribute("SpectraTab", true)
         local padding = btn:FindFirstChildOfClass("UIPadding")
         if padding then padding:Destroy() end
+        local stroke = btn:FindFirstChildOfClass("UIStroke")
+        if stroke then stroke.Transparency = 1 end
+        local underline = make("Frame", {Parent = btn,
+            AnchorPoint = Vector2.new(0.5, 1),
+            Position = UDim2.new(0.5, 0, 1, 0),
+            Size = UDim2.new(1, -16, 0, 0),
+            BackgroundColor3 = C_ACCENT, BorderSizePixel = 0})
+        underlines[index] = underline
         buttons[index] = btn
         bind(btn.MouseButton1Click:Connect(function() openSection(index) end))
     end
@@ -1361,19 +1528,19 @@ local function groupedPage(title, caption, sections)
     return hub
 end
 ExtraUI.TargetsHub = groupedPage("Target selection",
-    "Search and organise players in your session.", {{"PLAYERS", TargetsPage}})
+    "Find and manage players in the session.", {{"PLAYERS", TargetsPage}})
 ExtraUI.CombatPage = groupedPage("Combat controls",
-    "Targeting, advanced weapon options and fire-rate presets.", {
+    "Targeting systems and weapon configuration.", {
         {"AIM & TARGETING", AimPage}, {"FIRE RATE & GUN MODS", ExtraUI.GunsPage}})
 ExtraUI.GameplayPage = groupedPage("Gameplay utilities",
-    "Utility actions, companion commands and location shortcuts.", {
+    "Actions, companion commands and map shortcuts.", {
         {"TOOLS", ToolsPage}, {"STAND COMMANDS", ExtraUI.StandPage},
         {"TELEPORTS", ExtraUI.TeleportPage}})
 ExtraUI.VisualsPage = groupedPage("Visuals & alerts",
-    "On-screen overlays, visual preferences and event tracking.", {
+    "Player overlays and configurable event notifications.", {
         {"PLAYER ESP", ExtraUI.EspPage}, {"NOTIFICATIONS", ExtraUI.NotifyPage}})
 ExtraUI.OptionsPage = groupedPage("Settings & profiles",
-    "Tune movement, personalise the interface and manage profiles.", {
+    "Fine-tune the interface and manage saved presets.", {
         {"PREFERENCES", SettingsPage}, {"PROFILES", ExtraUI.ConfigPage}})
 
 -- Nested scrolling input routing (Fire Rate / Gun Mods / Notifications).
@@ -1442,11 +1609,11 @@ ExtraUI.NavButtons = {targets = TargetTab, combat = AimTab,
 local CurrentTab = "targets"
 local function showTab(which)
     CurrentTab = which
-    Subtitle.Text = ({targets = "TARGET MANAGEMENT    /    LIVE",
-        combat = "TARGETING    /    WEAPONS",
-        gameplay = "TOOLS    /    UTILITIES",
-        visuals = "OVERLAYS    /    EVENT TRACKING",
-        options = "INTERFACE    /    PROFILES"})[which] or "CONTROL CONSOLE"
+    Subtitle.Text = ({targets = "TARGETS   //   LIVE SELECTION",
+        combat = "COMBAT   //   ADVANCED OPTIONS",
+        gameplay = "GAMEPLAY   //   QUICK ACTIONS",
+        visuals = "VISUALS   //   EVENT TRACKING",
+        options = "SYSTEM   //   PROFILE MANAGER"})[which] or "MODULE INTERFACE"
     for name, pageView in pairs(ExtraUI.PageViews) do
         pageView.Visible = name == which
         if pageView.Visible and ExtraUI.HubControllers[pageView] then
@@ -1455,20 +1622,38 @@ local function showTab(which)
     end
     for name, tab in pairs(ExtraUI.NavButtons) do
         local active = name == which
-        tab.BackgroundColor3 = active and C_NAV_SELECTED or C_NAV_OFF
-        tab.TextColor3 = active and C_ACCENT or C_TEXT
-        ExtraUI.TabIndicators[tab].Visible = active
         tab:SetAttribute("SpectraTab", true)
         tab:SetAttribute("SpectraOn", active)
-        local edge = tab:FindFirstChildOfClass("UIStroke")
-        if edge then edge.Transparency = active and 0.38 or 0.7 end
+        TweenService:Create(tab, T_SOFT, {
+            BackgroundColor3 = active and C_NAV_SELECTED or C_NAV_OFF,
+        }):Play()
+        local typeLabels = ExtraUI.TabTypography[tab]
+        if typeLabels then
+            typeLabels.title.Font = active and Enum.Font.GothamSemibold or Enum.Font.GothamMedium
+            TweenService:Create(typeLabels.title, T_SOFT, {
+                TextColor3 = active and C_TEXT or C_FAINT,
+            }):Play()
+            TweenService:Create(typeLabels.number, T_SOFT, {
+                TextColor3 = active and C_ACCENT or C_MUTED,
+            }):Play()
+        end
+        local indicator = ExtraUI.TabIndicators[tab]
+        TweenService:Create(indicator, T_SNAP, {
+            Size = UDim2.fromOffset(2, active and 20 or 0),
+            BackgroundColor3 = C_ACCENT,
+        }):Play()
+        local outline = tab:FindFirstChildOfClass("UIStroke")
+        if outline then
+            outline.Color = active and C_ACCENT or C_BORDER
+            outline.Transparency = active and 0.45 or 0.8
+        end
     end
     local activePage = ExtraUI.PageViews[which]
     if activePage then
-        activePage.Position = UDim2.fromOffset(226, 99)
-        game:GetService("TweenService"):Create(activePage,
-            TweenInfo.new(0.19, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
-            {Position = UDim2.fromOffset(218, 99)}):Play()
+        activePage.Position = UDim2.fromOffset(231, 99)
+        TweenService:Create(activePage, T_SNAP, {
+            Position = UDim2.fromOffset(218, 99),
+        }):Play()
     end
 end
 bind(TargetTab.MouseButton1Click:Connect(function() showTab("targets") end))
@@ -1483,7 +1668,7 @@ bind(Minimise.MouseButton1Click:Connect(function()
     game:GetService("TweenService"):Create(Main,
         TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
         {Size = UDim2.fromOffset(DESIGN_WIDTH, Minimized and 81 or DESIGN_HEIGHT)}):Play()
-    Minimise.Text = Minimized and "+" or "–"
+    Minimise.Text = Minimized and "+" or "_"
     Subtitle.Visible = not Minimized
     for _, tab in pairs(ExtraUI.NavButtons) do tab.Visible = not Minimized end
     Status.Visible = not Minimized
@@ -3561,7 +3746,7 @@ local function addRow(p)
         Parent = List, Name = p.Name, Size = UDim2.new(1, -2, 0, 29),
         Text = "  " .. p.DisplayName .. " (@" .. p.Name .. ")",
         TextColor3 = C_TEXT, TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.Gotham, TextSize = 11, BorderSizePixel = 0,
+        Font = Enum.Font.GothamMedium, TextSize = 11, BorderSizePixel = 0,
         BackgroundColor3 = TargetSet[p] and C_SELECTED or C_OFF,
     }), 5)
     Rows[p] = row
@@ -7850,7 +8035,7 @@ style(CursorToggle, S.cursorKeyEnabled, "CURSOR PICK: ON", "CURSOR PICK: OFF")
 refreshAutoBuyControls()
 syncLabels()
 updateAutoStomp()
-say("Ready  •  Visuals > Notifications for event controls. All modules loaded.")
+say("READY  /  Use Visuals > Notifications to configure activity alerts.")
 if Me.Character and (S.autoArmor or next(S.autoBuys)) then
     task.spawn(buyAutoItems, Me.Character)
 end
@@ -7868,12 +8053,12 @@ make("UIStroke", {Parent = ExtraUI.LoadCard, Color = C_BORDER,
     Thickness = 1, Transparency = 0})
 ExtraUI.LoadTitle = make("TextLabel", {Parent = ExtraUI.LoadCard,
     Position = UDim2.fromOffset(24, 25), Size = UDim2.fromOffset(342, 35),
-    BackgroundTransparency = 1, Text = "NOSR  /  CONTROL CONSOLE",
+    BackgroundTransparency = 1, Text = "NOSR    /    INITIALISING",
     TextColor3 = C_TEXT, Font = Enum.Font.GothamBold, TextSize = 20,
     TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 102})
 ExtraUI.LoadCaption = make("TextLabel", {Parent = ExtraUI.LoadCard,
     Position = UDim2.fromOffset(24, 68), Size = UDim2.fromOffset(342, 24),
-    BackgroundTransparency = 1, Text = "PREPARING CONTROL CONSOLE",
+    BackgroundTransparency = 1, Text = "PREPARING WORKSPACE MODULES",
     TextColor3 = C_FAINT, Font = Enum.Font.GothamMedium, TextSize = 12,
     TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 102})
 ExtraUI.LoadTrack = round(make("Frame", {Parent = ExtraUI.LoadCard,
